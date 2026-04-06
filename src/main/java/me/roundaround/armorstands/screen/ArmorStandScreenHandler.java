@@ -148,6 +148,9 @@ public class ArmorStandScreenHandler extends AbstractContainerMenu {
               isSlotDisabled(ArmorStandScreenHandler.this.armorStand, equipmentSlot)) {
             return false;
           }
+          if (equipmentSlot == EquipmentSlot.HEAD) {
+            return true;
+          }
           return equipmentSlot == ArmorStandScreenHandler.this.armorStand.getEquipmentSlotForItem(stack);
         }
 
