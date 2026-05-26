@@ -8,8 +8,8 @@ allay {
   authors.set(listOf("Roundaround"))
   license.set("MIT")
   homepage.set("https://modrinth.com/mod/armor-stands")
-  repository.set("https://github.com/Roundaround/mc-fabric-armor-stands")
-  issues.set("https://github.com/Roundaround/mc-fabric-armor-stands/issues")
+  repository.set("https://github.com/Roundaround/mc-armor-stands")
+  issues.set("https://github.com/Roundaround/mc-armor-stands/issues")
   logoFile.set("assets/armorstands/banner.png")
 
   modrinth {

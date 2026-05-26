@@ -1,4 +1,4 @@
-![Armor Stands](https://github.com/Roundaround/mc-fabric-armor-stands/raw/main/assets/title-round-1.png)
+![Armor Stands](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/title-round-1.png)
 
 ![](https://img.shields.io/badge/Loader-Fabric%20|%20Forge%20|%20NeoForge-313e51?style=for-the-badge)
 ![](https://img.shields.io/badge/MC-26.1--26.1.2%20|%201.21%20|%201.20%20|%201.19-313e51?style=for-the-badge)
@@ -6,7 +6,7 @@
 
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/armor-stands?style=flat&logo=modrinth&color=00AF5C)](https://modrinth.com/mod/armor-stands)
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1295440?style=flat&logo=curseforge&color=F16436)](https://www.curseforge.com/minecraft/mc-mods/armor-stands)
-[![GitHub Repo stars](https://img.shields.io/github/stars/Roundaround/mc-fabric-armor-stands?style=flat&logo=github)](https://github.com/Roundaround/mc-fabric-armor-stands)
+[![GitHub Repo stars](https://img.shields.io/github/stars/Roundaround/mc-armor-stands?style=flat&logo=github)](https://github.com/Roundaround/mc-armor-stands)
 
 [![Support me on Ko-fi](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/donate/kofi-singular-alt_vector.svg)](https://ko-fi.com/roundaround)
 
