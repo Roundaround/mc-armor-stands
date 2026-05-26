@@ -1,13 +1,27 @@
-import me.roundaround.gradle.extension.library.LibModule
-
 plugins {
-  id("roundalib-gradle") version "2.0.0"
+  id("me.roundaround.allay")
 }
 
-roundalib {
-  library {
-    local = true
-    version = "4.0.0"
-    modules.addAll(LibModule.CORE, LibModule.GUI, LibModule.CONFIG, LibModule.CONFIG_GUI, LibModule.OBSERVABLES)
+allay {
+  displayName.set("Armor Stands")
+  description.set("Place, pose, and dress armor stands with an easy-to-use UI.")
+  authors.set(listOf("Roundaround"))
+  license.set("MIT")
+  homepage.set("https://modrinth.com/mod/armor-stands")
+  repository.set("https://github.com/Roundaround/mc-fabric-armor-stands")
+  issues.set("https://github.com/Roundaround/mc-fabric-armor-stands/issues")
+  logoFile.set("assets/armorstands/banner.png")
+
+  modrinth {
+    projectId.set("armor-stands")
+  }
+
+  curseforge {
+    projectId.set(1295440)
+  }
+
+  release {
+    versionType.set("release")
+    sourcesJar.set(true)
   }
 }

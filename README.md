@@ -1,7 +1,7 @@
 ![Armor Stands](https://github.com/Roundaround/mc-fabric-armor-stands/raw/main/assets/title-round-1.png)
 
-![](https://img.shields.io/badge/Loader-Fabric-313e51?style=for-the-badge)
-![](https://img.shields.io/badge/MC-26.1--26.1.1%20|%201.21%20|%201.20%20|%201.19-313e51?style=for-the-badge)
+![](https://img.shields.io/badge/Loader-Fabric%20|%20Forge%20|%20NeoForge-313e51?style=for-the-badge)
+![](https://img.shields.io/badge/MC-26.1--26.1.2%20|%201.21%20|%201.20%20|%201.19-313e51?style=for-the-badge)
 ![](https://img.shields.io/badge/Side-Client+Server-313e51?style=for-the-badge)
 
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/armor-stands?style=flat&logo=modrinth&color=00AF5C)](https://modrinth.com/mod/armor-stands)
