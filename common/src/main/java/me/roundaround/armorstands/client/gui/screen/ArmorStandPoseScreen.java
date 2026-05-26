@@ -18,11 +18,24 @@ import me.roundaround.trove.client.gui.widget.drawable.HorizontalLineWidget;
 import me.roundaround.trove.client.gui.widget.drawable.LabelWidget;
 import me.roundaround.armorstands.screen.ArmorStandScreenHandler;
 import me.roundaround.armorstands.util.Pose;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.core.Rotations;
+import net.minecraft.gizmos.Gizmos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ArmorStandPoseScreen extends AbstractArmorStandScreen {
   private static final int SLIDER_WIDTH = 100;
@@ -32,6 +45,14 @@ public class ArmorStandPoseScreen extends AbstractArmorStandScreen {
   protected static final CustomIcon LEFT_ARM_ICON = new CustomIcon("leftarm", 20);
   protected static final CustomIcon RIGHT_LEG_ICON = new CustomIcon("rightleg", 20);
   protected static final CustomIcon LEFT_LEG_ICON = new CustomIcon("leftleg", 20);
+
+  private static final int GIZMO_COLOR = ARGB.color(255, 50, 200, 255);
+  private static final int AXIS_COLOR = ARGB.color(255, 150, 150, 150);
+  private static final float CIRCLE_RADIUS = 0.25f;
+  private static final float AXIS_LENGTH = 0.4f;
+  private static final int CIRCLE_SEGMENTS = 32;
+
+  private final List<AxisWidgetGroup> axisWidgetGroups = new ArrayList<>();
 
   private PosePart posePart = PosePart.HEAD;
 
@@ -249,27 +270,35 @@ public class ArmorStandPoseScreen extends AbstractArmorStandScreen {
         LabelWidget.builder(this.font, parameter.getDisplayName()).bgColor(BACKGROUND_COLOR).build(),
         (parent, self) -> self.setWidth(SLIDER_WIDTH - 3 * (ELEMENT_HEIGHT + parent.getSpacing()))
     );
-    firstRow.add(IconButtonWidget.builder(BuiltinIcon.MINUS_13, Constants.MOD_ID)
+    Button minusButton = firstRow.add(IconButtonWidget.builder(BuiltinIcon.MINUS_13, Constants.MOD_ID)
         .dimensions(ELEMENT_HEIGHT)
         .onPress((button) -> slider.decrement())
         .tooltip(Tooltip.create(Component.translatable("armorstands.pose.subtract")))
         .build());
-    firstRow.add(IconButtonWidget.builder(BuiltinIcon.PLUS_13, Constants.MOD_ID)
+    Button plusButton = firstRow.add(IconButtonWidget.builder(BuiltinIcon.PLUS_13, Constants.MOD_ID)
         .dimensions(ELEMENT_HEIGHT)
         .onPress((button) -> slider.increment())
         .tooltip(Tooltip.create(Component.translatable("armorstands.pose.add")))
         .build());
-    firstRow.add(IconButtonWidget.builder(BuiltinIcon.ROTATE_13, Constants.MOD_ID)
+    Button resetButton = firstRow.add(IconButtonWidget.builder(BuiltinIcon.ROTATE_13, Constants.MOD_ID)
         .dimensions(ELEMENT_HEIGHT)
         .onPress((button) -> slider.zero())
         .tooltip(Tooltip.create(Component.translatable("armorstands.pose.zero")))
         .build());
+
+    this.axisWidgetGroups.add(new AxisWidgetGroup(parameter, List.of(slider, minusButton, plusButton, resetButton)));
 
     block.add(firstRow);
     block.add(slider);
     this.layout.bottomRight.add(block);
 
     return slider;
+  }
+
+  private record AxisWidgetGroup(EulerAngleParameter parameter, List<AbstractWidget> widgets) {
+    boolean isAnyHovered() {
+      return this.widgets.stream().anyMatch(AbstractWidget::isHovered);
+    }
   }
 
   @Override
@@ -284,6 +313,113 @@ public class ArmorStandPoseScreen extends AbstractArmorStandScreen {
       return true;
     }
     return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+  }
+
+  @Override
+  public void extractRenderState(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    super.extractRenderState(context, mouseX, mouseY, delta);
+
+    EulerAngleParameter hoveredParam = this.getHoveredParameter();
+    if (hoveredParam != null) {
+      Vec3 center = this.getJointPosition(this.posePart);
+      float scale = this.armorStand.getScale() * this.armorStand.getAgeScale();
+
+      Rotations pose = this.posePart.get(this.armorStand);
+      float poseX = (float) Math.toRadians(pose.x());
+      float poseY = (float) Math.toRadians(pose.y());
+      float poseZ = (float) Math.toRadians(pose.z());
+
+      // Replicate the exact transform the renderer applies to body parts:
+      // 1. Entity yaw: rotateY(180 - bodyRot)
+      // 2. Part pose: rotationZYX(zRot, yRot, xRot)
+      // Build a quaternion matching the renderer, then extract the axis
+      // for the hovered parameter by comparing with/without a small delta.
+      // The renderer applies rotateY(180 - yaw) which flips the visual
+      // Y rotation direction. Negate poseY so the gizmo matches the
+      // rendered orientation, not the logical model orientation.
+      Quaternionf standQ = new Quaternionf().rotateY((float) Math.toRadians(180.0f - this.armorStand.getYRot()));
+      Quaternionf basePose = new Quaternionf().rotationZYX(poseZ, -poseY, poseX);
+
+      float nudge = 0.1f;
+      Quaternionf tweaked;
+      switch (hoveredParam) {
+        case PITCH -> tweaked = new Quaternionf().rotationZYX(poseZ, -poseY, poseX + nudge);
+        case YAW -> tweaked = new Quaternionf().rotationZYX(poseZ, -poseY + nudge, poseX);
+        case ROLL -> tweaked = new Quaternionf().rotationZYX(poseZ + nudge, -poseY, poseX);
+        default -> { return; }
+      }
+
+      // The incremental rotation in model space: tweaked * basePose^-1
+      Quaternionf diff = new Quaternionf(tweaked).mul(new Quaternionf(basePose).invert());
+      // Extract rotation axis from the quaternion (the normalized xyz components)
+      Vector3f modelAxis = new Vector3f(diff.x, diff.y, diff.z).normalize();
+
+      // Transform to world space
+      Vec3 axis = toVec3(standQ.transform(new Vector3f(modelAxis)));
+
+      // Build two perpendicular vectors for the circle
+      Vector3f arbitrary = Math.abs(modelAxis.dot(new Vector3f(0, 1, 0))) < 0.9f
+          ? new Vector3f(0, 1, 0) : new Vector3f(1, 0, 0);
+      Vector3f uLocal = new Vector3f(modelAxis).cross(arbitrary).normalize();
+      Vector3f vLocal = new Vector3f(modelAxis).cross(uLocal).normalize();
+      Vec3 u = toVec3(standQ.transform(new Vector3f(uLocal)));
+      Vec3 v = toVec3(standQ.transform(new Vector3f(vLocal)));
+
+      emitCircleGizmo(center, u, v, CIRCLE_RADIUS * scale, GIZMO_COLOR);
+      Gizmos.line(
+          center.add(axis.scale(-AXIS_LENGTH * scale)),
+          center.add(axis.scale(AXIS_LENGTH * scale)),
+          AXIS_COLOR);
+    }
+  }
+
+  private static Vec3 toVec3(Vector3f v) {
+    return new Vec3(v.x, v.y, v.z);
+  }
+
+  private Vec3 getJointPosition(PosePart part) {
+    Vec3 pos = this.armorStand.position();
+    float yaw = this.armorStand.getYRot();
+    double yawRad = Math.toRadians(yaw);
+    // Combined visual scale: attribute scale (slider) × age scale (small toggle)
+    float scale = this.armorStand.getScale() * this.armorStand.getAgeScale();
+
+    // Model X axis in world space (positive = stand's left side)
+    Vec3 modelX = new Vec3(Math.cos(yawRad), 0, Math.sin(yawRad));
+
+    return switch (part) {
+      case HEAD -> pos.add(0, 1.4375 * scale, 0);
+      case BODY -> pos.add(0, 1.5 * scale, 0);
+      case RIGHT_ARM -> pos.add(0, 1.375 * scale, 0).add(modelX.scale(-5.0 / 16.0 * scale));
+      case LEFT_ARM -> pos.add(0, 1.375 * scale, 0).add(modelX.scale(5.0 / 16.0 * scale));
+      case RIGHT_LEG -> pos.add(0, 0.75 * scale, 0).add(modelX.scale(-1.9 / 16.0 * scale));
+      case LEFT_LEG -> pos.add(0, 0.75 * scale, 0).add(modelX.scale(1.9 / 16.0 * scale));
+    };
+  }
+
+  @Nullable
+  private EulerAngleParameter getHoveredParameter() {
+    for (AxisWidgetGroup group : this.axisWidgetGroups) {
+      if (group.isAnyHovered()) {
+        return group.parameter;
+      }
+    }
+    return null;
+  }
+
+  static void emitCircleGizmo(Vec3 center, Vec3 u, Vec3 v, float radius, int color) {
+    for (int i = 0; i < CIRCLE_SEGMENTS; i++) {
+      double a1 = 2 * Math.PI * i / CIRCLE_SEGMENTS;
+      double a2 = 2 * Math.PI * (i + 1) / CIRCLE_SEGMENTS;
+      Vec3 p1 = center.add(u.scale(Math.cos(a1) * radius)).add(v.scale(Math.sin(a1) * radius));
+      Vec3 p2 = center.add(u.scale(Math.cos(a2) * radius)).add(v.scale(Math.sin(a2) * radius));
+
+      if (i == CIRCLE_SEGMENTS - 1) {
+        Gizmos.arrow(p1, p2, color);
+      } else {
+        Gizmos.line(p1, p2, color);
+      }
+    }
   }
 
   @Override

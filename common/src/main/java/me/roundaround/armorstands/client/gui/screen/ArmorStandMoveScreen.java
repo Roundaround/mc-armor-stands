@@ -3,6 +3,7 @@ package me.roundaround.armorstands.client.gui.screen;
 import me.roundaround.armorstands.client.network.ClientNetworking;
 import me.roundaround.armorstands.network.ScreenType;
 import me.roundaround.armorstands.network.UtilityAction;
+import me.roundaround.armorstands.util.ArmorStandHelper;
 import me.roundaround.trove.client.gui.layout.FillerWidget;
 import me.roundaround.trove.client.gui.layout.linear.LinearLayoutWidget;
 import me.roundaround.trove.client.gui.util.GuiUtil;
@@ -12,11 +13,17 @@ import me.roundaround.trove.client.gui.widget.drawable.LabelWidget;
 import me.roundaround.armorstands.screen.ArmorStandScreenHandler;
 import me.roundaround.armorstands.util.MoveMode;
 import me.roundaround.armorstands.util.MoveUnits;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.core.Direction;
+import net.minecraft.gizmos.Gizmos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -192,6 +199,39 @@ public class ArmorStandMoveScreen extends AbstractArmorStandScreen {
     MoveButtonRef ref = new MoveButtonRef(direction, amount, this.mode, this.units);
     this.moveButtons.add(ref);
     return ref.getButton();
+  }
+
+  @Override
+  public void extractRenderState(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    super.extractRenderState(context, mouseX, mouseY, delta);
+
+    Direction hoveredDirection = this.getHoveredMoveDirection();
+    if (hoveredDirection != null) {
+      Vec3 worldDir = this.getWorldDirection(hoveredDirection);
+      float scale = this.armorStand.getScale() * this.armorStand.getAgeScale();
+      Vec3 start = this.armorStand.position().add(0, 1.0 * scale, 0);
+      Vec3 end = start.add(worldDir.scale(1.5));
+      Gizmos.arrow(start, end, ARGB.color(255, 50, 200, 255));
+    }
+  }
+
+  @Nullable
+  private Direction getHoveredMoveDirection() {
+    for (MoveButtonRef ref : this.moveButtons) {
+      if (ref.getButton().isHovered()) {
+        return ref.direction;
+      }
+    }
+    return null;
+  }
+
+  private Vec3 getWorldDirection(Direction direction) {
+    Vec3 localVec = new Vec3(direction.step());
+    return switch (this.mode) {
+      case RELATIVE -> localVec;
+      case LOCAL_TO_STAND -> ArmorStandHelper.localToRelative(this.armorStand, localVec);
+      case LOCAL_TO_PLAYER -> ArmorStandHelper.localToRelative(this.getPlayer(), localVec);
+    };
   }
 
   @Override
