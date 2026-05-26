@@ -56,6 +56,7 @@ public class ServerSideConfig extends ModConfigImpl implements WorldScopedFileSt
   public BooleanConfigOption enforcePermissions;
   public BooleanConfigOption opsHavePermissions;
   public StringListConfigOption allowedUsers;
+  public BooleanConfigOption allowAnyItemInHeadSlot;
 
   private DedicatedServer server;
 
@@ -87,6 +88,11 @@ public class ServerSideConfig extends ModConfigImpl implements WorldScopedFileSt
         .build()).serverOnly().commit();
     this.allowedUsers = this.buildRegistration(StringListConfigOption.builder(ConfigPath.of("allowedUsers"))
         .setComment("List of users by their UUID permitted to use the mod.")
+        .build()).serverOnly().commit();
+    this.allowAnyItemInHeadSlot = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of(
+        "allowAnyItemInHeadSlot"))
+        .setDefaultValue(true)
+        .setComment("Allow placing any item in the armor stand's head slot, not just helmets.")
         .build()).serverOnly().commit();
   }
 

@@ -6,6 +6,7 @@ import me.roundaround.armorstands.entity.ArmorStandInventory;
 import me.roundaround.armorstands.mixin.ArmorStandAccessor;
 import me.roundaround.armorstands.mixin.LivingEntityAccessor;
 import me.roundaround.armorstands.network.ScreenType;
+import me.roundaround.armorstands.server.config.ServerSideConfig;
 import me.roundaround.armorstands.server.network.ServerNetworking;
 import me.roundaround.armorstands.util.ArmorStandEditor;
 import net.minecraft.resources.Identifier;
@@ -147,6 +148,12 @@ public class ArmorStandScreenHandler extends AbstractContainerMenu {
           if (!ArmorStandScreenHandler.this.playerInventory.player.isCreative() &&
               isSlotDisabled(ArmorStandScreenHandler.this.armorStand, equipmentSlot)) {
             return false;
+          }
+          if (equipmentSlot == EquipmentSlot.HEAD) {
+            ServerSideConfig config = ServerSideConfig.getInstance();
+            if (config == null || config.allowAnyItemInHeadSlot.getValue()) {
+              return true;
+            }
           }
           return equipmentSlot == ArmorStandScreenHandler.this.armorStand.getEquipmentSlotForItem(stack);
         }
