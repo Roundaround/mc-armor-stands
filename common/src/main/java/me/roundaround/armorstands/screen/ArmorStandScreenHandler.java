@@ -149,11 +149,8 @@ public class ArmorStandScreenHandler extends AbstractContainerMenu {
               isSlotDisabled(ArmorStandScreenHandler.this.armorStand, equipmentSlot)) {
             return false;
           }
-          if (equipmentSlot == EquipmentSlot.HEAD) {
-            ServerSideConfig config = ServerSideConfig.getInstance();
-            if (config == null || config.allowAnyItemInHeadSlot.getValue()) {
-              return true;
-            }
+          if (equipmentSlot == EquipmentSlot.HEAD && ArmorStandScreenHandler.this.allowAnyItemInHeadSlot()) {
+            return true;
           }
           return equipmentSlot == ArmorStandScreenHandler.this.armorStand.getEquipmentSlotForItem(stack);
         }
@@ -273,5 +270,13 @@ public class ArmorStandScreenHandler extends AbstractContainerMenu {
 
   public static boolean isSlotDisabled(ArmorStand armorStand, EquipmentSlot slot) {
     return (((ArmorStandAccessor) armorStand).getDisabledSlots() & 1 << slot.getIndex()) != 0;
+  }
+
+  private boolean allowAnyItemInHeadSlot() {
+    if (this.playerInventory.player instanceof ServerPlayer serverPlayer &&
+        serverPlayer.level().getServer().isDedicatedServer()) {
+      return ServerSideConfig.getInstance().allowAnyItemInHeadSlot.getValue();
+    }
+    return true;
   }
 }
