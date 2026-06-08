@@ -1,6 +1,7 @@
 package me.roundaround.armorstands.client.network;
 
 import me.roundaround.armorstands.network.ArmorStandFlag;
+import me.roundaround.armorstands.network.MannequinFlag;
 import me.roundaround.armorstands.network.Networking;
 import me.roundaround.armorstands.network.PosePart;
 import me.roundaround.armorstands.network.EulerAngleParameter;
@@ -42,6 +43,10 @@ public final class ClientNetworking {
 
   public static void sendSetFlagPacket(ArmorStandFlag flag, boolean value) {
     TroveNetworking.sendToServer(new Networking.SetFlagC2S(flag, value));
+  }
+
+  public static void sendSetMannequinFlagPacket(MannequinFlag flag, boolean value) {
+    TroveNetworking.sendToServer(new Networking.SetMannequinFlagC2S(flag, value));
   }
 
   public static void sendSetPosePacket(SavedPose pose) {

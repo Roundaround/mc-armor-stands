@@ -2,6 +2,7 @@ package me.roundaround.armorstands.util;
 
 import me.roundaround.armorstands.network.ArmorStandFlag;
 import me.roundaround.armorstands.network.EulerAngleParameter;
+import me.roundaround.armorstands.network.MannequinFlag;
 import me.roundaround.armorstands.network.PosePart;
 import me.roundaround.armorstands.util.actions.*;
 import net.minecraft.core.Direction;
@@ -131,6 +132,10 @@ public class ArmorStandEditor {
 
   public void setFlag(ArmorStandFlag flag, boolean value) {
     applyAction(FlagAction.set(flag, value));
+  }
+
+  public void setMannequinFlag(MannequinFlag flag, boolean value) {
+    applyAction(MannequinFlagAction.set(flag, value));
   }
 
   public void setPose(Pose pose) {

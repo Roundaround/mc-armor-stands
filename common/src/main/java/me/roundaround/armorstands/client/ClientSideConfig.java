@@ -21,6 +21,9 @@ public class ClientSideConfig extends ModConfigImpl implements GameScopedFileSto
   public BooleanConfigOption requireSneakingToEdit;
   public IntConfigOption nameRenderDistance;
   public BooleanConfigOption directOnlyNameRender;
+  public BooleanConfigOption disableAutoSkinRefresh;
+  public BooleanConfigOption disableMannequins;
+  public BooleanConfigOption disableMannequinAnimations;
 
   private ClientSideConfig() {
     super(Constants.MOD_ID, "client");
@@ -50,6 +53,22 @@ public class ClientSideConfig extends ModConfigImpl implements GameScopedFileSto
             "directOnlyNameRender"))
         .setDefaultValue(true)
         .setComment("Only render armor stand names when targeting them.")
+        .build()).clientOnly().commit();
+    this.disableAutoSkinRefresh = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of(
+            "disableAutoSkinRefresh"))
+        .setDefaultValue(false)
+        .setComment("Disable the periodic refresh of mannequin skins (they stop following players' skin changes).",
+            "The Refresh skin button still works when this is on.")
+        .build()).clientOnly().commit();
+    this.disableMannequins = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of(
+            "disableMannequins"))
+        .setDefaultValue(false)
+        .setComment("Disable rendering of all mannequin armor stands on this client.")
+        .build()).clientOnly().commit();
+    this.disableMannequinAnimations = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of(
+            "disableMannequinAnimations"))
+        .setDefaultValue(false)
+        .setComment("Disable the idle animation on mannequin armor stands on this client.")
         .build()).clientOnly().commit();
   }
 

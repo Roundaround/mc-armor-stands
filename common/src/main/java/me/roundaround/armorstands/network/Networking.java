@@ -3,15 +3,19 @@ package me.roundaround.armorstands.network;
 import me.roundaround.armorstands.client.gui.MessageRenderer;
 import me.roundaround.armorstands.client.gui.screen.AbstractArmorStandScreen;
 import me.roundaround.armorstands.client.gui.screen.ArmorStandInventoryScreen;
+import me.roundaround.armorstands.client.gui.screen.ArmorStandMannequinScreen;
 import me.roundaround.armorstands.client.gui.screen.ArmorStandMoveScreen;
 import me.roundaround.armorstands.client.gui.screen.ArmorStandPoseScreen;
 import me.roundaround.armorstands.client.gui.screen.ArmorStandPresetsScreen;
 import me.roundaround.armorstands.client.gui.screen.ArmorStandRotateScreen;
 import me.roundaround.armorstands.client.gui.screen.ArmorStandUtilitiesScreen;
+import me.roundaround.armorstands.client.render.MannequinSettings;
 import me.roundaround.armorstands.generated.Constants;
 import me.roundaround.armorstands.mixin.ArmorStandAccessor;
 import me.roundaround.armorstands.screen.ArmorStandScreenHandler;
 import me.roundaround.armorstands.interfaces.ArmorStandScreenHandlerAccess;
+import me.roundaround.armorstands.interfaces.MannequinSettingsAccess;
+import me.roundaround.armorstands.server.config.ServerSideConfig;
 import me.roundaround.armorstands.server.network.ServerNetworking;
 import me.roundaround.armorstands.util.MoveMode;
 import me.roundaround.armorstands.util.MoveUnits;
@@ -44,6 +48,8 @@ public final class Networking {
 
   public static final Identifier CLIENT_UPDATE_S2C = Identifier.fromNamespaceAndPath(
       Constants.MOD_ID, "client_update_s2c");
+  public static final Identifier MANNEQUIN_SETTINGS_S2C = Identifier.fromNamespaceAndPath(
+      Constants.MOD_ID, "mannequin_settings_s2c");
   public static final Identifier MESSAGE_S2C = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "message_s2c");
   public static final Identifier OPEN_SCREEN_S2C = Identifier.fromNamespaceAndPath(
       Constants.MOD_ID, "open_screen_s2c");
@@ -59,6 +65,7 @@ public final class Networking {
   public static final Identifier REQUEST_SCREEN_C2S = Identifier.fromNamespaceAndPath(
       Constants.MOD_ID, "request_screen_c2s");
   public static final Identifier SET_FLAG_C2S = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "set_flag_c2s");
+  public static final Identifier SET_MANNEQUIN_FLAG_C2S = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "set_mannequin_flag_c2s");
   public static final Identifier SET_POSE_C2S = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "set_pose_c2s");
   public static final Identifier SET_POSE_PRESET_C2S = Identifier.fromNamespaceAndPath(
       Constants.MOD_ID, "set_pose_preset_c2s");
@@ -100,6 +107,13 @@ public final class Networking {
       if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
       sh.getEditor().setFlag(payload.flag(), payload.value());
       ServerNetworking.sendClientUpdatePacket(player, sh.getEditor().getArmorStand());
+    });
+
+    TroveNetworking.registerC2S(SetMannequinFlagC2S.ID, SetMannequinFlagC2S.CODEC, (payload, player) -> {
+      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
+      if (player.level().getServer().isDedicatedServer()
+          && !ServerSideConfig.getInstance().enableMannequins.getValue()) return;
+      sh.getEditor().setMannequinFlag(payload.flag(), payload.value());
     });
 
     TroveNetworking.registerC2S(SetPoseC2S.ID, SetPoseC2S.CODEC, (payload, player) -> {
@@ -150,6 +164,16 @@ public final class Networking {
       screen.updateDisabledSlotsOnClient(payload.disabledSlots());
     });
 
+    TroveNetworking.registerS2C(MannequinSettingsS2C.ID, MannequinSettingsS2C.CODEC, (payload) -> {
+      Minecraft mc = Minecraft.getInstance();
+      if (mc.level == null) return;
+      if (!(mc.level.getEntity(payload.entityId()) instanceof ArmorStand armorStand)) return;
+      // Write the local copy via the duck interface. The level here is a ClientLevel, so the setter
+      // skips the broadcast and just updates the field the renderer/screen read each tick.
+      ((MannequinSettingsAccess) armorStand).armorstands$setMannequinSettings(
+          MannequinSettings.fromBits(payload.bits()));
+    });
+
     TroveNetworking.registerS2C(MessageS2C.ID, MessageS2C.CODEC, (payload) -> {
       if (!(Minecraft.getInstance().screen instanceof AbstractArmorStandScreen screen)) return;
       screen.getMessageRenderer().addMessage(
@@ -173,6 +197,7 @@ public final class Networking {
         case POSE -> new ArmorStandPoseScreen(screenHandler);
         case PRESETS -> new ArmorStandPresetsScreen(screenHandler);
         case INVENTORY -> new ArmorStandInventoryScreen(screenHandler);
+        case MANNEQUIN -> new ArmorStandMannequinScreen(screenHandler);
       });
     });
 
@@ -227,6 +252,21 @@ public final class Networking {
     @Override
     @NotNull
     public Type<ClientUpdateS2C> type() {
+      return ID;
+    }
+  }
+
+  public record MannequinSettingsS2C(int entityId, int bits) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<MannequinSettingsS2C> ID =
+        new CustomPacketPayload.Type<>(MANNEQUIN_SETTINGS_S2C);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MannequinSettingsS2C> CODEC = StreamCodec.composite(
+        ByteBufCodecs.INT, MannequinSettingsS2C::entityId,
+        ByteBufCodecs.INT, MannequinSettingsS2C::bits,
+        MannequinSettingsS2C::new);
+
+    @Override
+    @NotNull
+    public Type<MannequinSettingsS2C> type() {
       return ID;
     }
   }
@@ -374,6 +414,20 @@ public final class Networking {
     @Override
     @NotNull
     public Type<SetFlagC2S> type() {
+      return ID;
+    }
+  }
+
+  public record SetMannequinFlagC2S(MannequinFlag flag, boolean value) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<SetMannequinFlagC2S> ID = new CustomPacketPayload.Type<>(SET_MANNEQUIN_FLAG_C2S);
+    public static final StreamCodec<RegistryFriendlyByteBuf, SetMannequinFlagC2S> CODEC = StreamCodec.composite(
+        MannequinFlag.PACKET_CODEC, SetMannequinFlagC2S::flag,
+        ByteBufCodecs.BOOL, SetMannequinFlagC2S::value,
+        SetMannequinFlagC2S::new);
+
+    @Override
+    @NotNull
+    public Type<SetMannequinFlagC2S> type() {
       return ID;
     }
   }

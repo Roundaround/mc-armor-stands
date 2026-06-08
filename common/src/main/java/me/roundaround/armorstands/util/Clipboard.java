@@ -1,5 +1,7 @@
 package me.roundaround.armorstands.util;
 
+import me.roundaround.armorstands.client.render.MannequinSettings;
+import me.roundaround.armorstands.interfaces.MannequinSettingsAccess;
 import me.roundaround.armorstands.server.network.ServerNetworking;
 import me.roundaround.armorstands.util.actions.ClipboardPasteAction;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,28 +37,35 @@ public class Clipboard {
   public static class Entry implements ArmorStandApplyable {
     private Optional<Pose> pose;
     private Optional<FlagSnapshot> flags;
+    private Optional<MannequinSettings> mannequinSettings;
 
-    private Entry(Optional<Pose> pose, Optional<FlagSnapshot> flags) {
+    private Entry(
+        Optional<Pose> pose, Optional<FlagSnapshot> flags,
+        Optional<MannequinSettings> mannequinSettings) {
       this.pose = pose;
       this.flags = flags;
+      this.mannequinSettings = mannequinSettings;
     }
 
     public static Entry everything(ArmorStand armorStand) {
-      return new Entry(Optional.of(new Pose(armorStand)), Optional.of(FlagSnapshot.all(armorStand)));
+      return new Entry(Optional.of(new Pose(armorStand)), Optional.of(FlagSnapshot.all(armorStand)),
+          Optional.of(((MannequinSettingsAccess) armorStand).armorstands$getMannequinSettings()));
     }
 
     public static Entry poseOnly(ArmorStand armorStand) {
-      return new Entry(Optional.of(new Pose(armorStand)), Optional.empty());
+      return new Entry(Optional.of(new Pose(armorStand)), Optional.empty(), Optional.empty());
     }
 
     public static Entry flagsOnly(ArmorStand armorStand) {
-      return new Entry(Optional.empty(), Optional.of(FlagSnapshot.all(armorStand)));
+      return new Entry(Optional.empty(), Optional.of(FlagSnapshot.all(armorStand)), Optional.empty());
     }
 
     @Override
     public void apply(Player player, ArmorStand armorStand) {
       pose.ifPresent((pose) -> pose.apply(player, armorStand));
       flags.ifPresent((flags) -> flags.apply(player, armorStand));
+      mannequinSettings.ifPresent((settings) ->
+          ((MannequinSettingsAccess) armorStand).armorstands$setMannequinSettings(settings));
     }
   }
 }

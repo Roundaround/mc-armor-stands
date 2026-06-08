@@ -14,7 +14,8 @@ Place, pose, and dress armor stands with an easy-to-use UI. Simply right click a
 
 On servers, players either need OP permissions or need to be explicitly added with the command `/armorstands add playername`.
 
-![](https://cdn.modrinth.com/data/FlC9CXUY/images/e2b6a77e2849dbbf4a4cb92b822c8c340d955c87.png)
+<!-- TODO screenshot: overview — see screenshot-checklist.html -->
+![Editing an armor stand with the Armor Stands UI](assets/screenshots/overview.png)
 
 ## Helpful tips
 
@@ -39,6 +40,12 @@ There is a "global" config file for your client that applies to all your single 
 
 `directOnlyNameRender`: `true|false` - Only render armor stand names when targeting them. Note that "targeting" an entity in Minecraft only works within your "entity interaction range", which is 3 blocks by default. This can be changed by effects/mods.
 
+`disableAutoSkinRefresh`: `true|false` - Globally turn off the periodic auto-refresh of mannequin skins. Overrides each stand's "Auto-refresh skin" toggle, so no mannequin re-fetches its skin automatically; the manual "Refresh skin" button still works.
+
+`disableMannequins`: `true|false` - Disable mannequin rendering entirely on your client. Every armor stand renders as the normal model regardless of its mannequin settings, and no skins are ever looked up.
+
+`disableMannequinAnimations`: `true|false` - Turn off the mannequin idle animation on your client, regardless of each stand's "Animations" toggle.
+
 ### Dedicated server
 
 The server's configuration file will be located inside the world's directory, i.e. `<world>/config/armorstands.toml`. There are a few more configuration options for server side, particularly for controlling who has access to use the mod. If you previously used the `enforce-armor-stand-permissions` setting in the `server.properties` file or the `armorstandusers.json`, there are equivalents in the config file now, and the mod will automatically migrate the contents for you on first start!
@@ -51,6 +58,10 @@ The server's configuration file will be located inside the world's directory, i.
 
 `allowedUsers`: `[UUID]` - List of players by their UUID permitted to use the mod. Only has any effect if `enforcePermissions` is `true`. Can also be modified from inside the game with the `/armorstands add <player>` and `/armorstands remove <player>`.
 
+`allowAnyItemInHeadSlot`: `true|false` - Allow placing any item in an armor stand's head slot, not just helmets.
+
+`enableMannequins`: `true|false` - Whether the mannequin feature is available on the server. When `false`, the feature is turned off server-wide: mannequin settings can't be changed and aren't sent to clients, so no stand renders as a mannequin.
+
 ## Screens
 
 ### Utilities
@@ -61,7 +72,8 @@ On the bottom left there are several quick-setup actions, many of which actually
 
 On the right is a list of toggles. Most of them are self-explanatory, but play around with them if you're not sure what they do!
 
-![](https://cdn.modrinth.com/data/FlC9CXUY/images/58d63b19855039f2547b02e1624a916b525bcc5f.png)
+<!-- TODO screenshot: utilities — see screenshot-checklist.html -->
+![The utilities screen](assets/screenshots/utilities.png)
 
 ### Move
 
@@ -73,7 +85,8 @@ On the bottom left there are several quick actions. They all have tooltips to he
 
 On the right is a large wall of buttons. At the bottom, you'll see buttons for moving the armor stand by the specified amount and in the direction labelled on the left. Just above those is a helpful label showing which direction you are currently facing for reference. Above that are two buttons that let you change the parameters for how the stand will be moved.
 
-![](https://cdn.modrinth.com/data/FlC9CXUY/images/e9007d0e3c22459fefceb1a6fed98e1c3bf0613f.png)
+<!-- TODO screenshot: move — see screenshot-checklist.html -->
+![The move screen](assets/screenshots/move.png)
 
 ### Rotate
 
@@ -81,7 +94,8 @@ On the rotate page, you'll find tools to easily rotate your armor stand the dire
 
 Similar to the move page, the left side features helpful text blocks and quick action buttons, and the right side has buttons to nudge the direction, plus a slider to quickly move it large amounts!
 
-![](https://cdn.modrinth.com/data/FlC9CXUY/images/227a04f4cdc58ec5076d94a54c6db86295657170.png)
+<!-- TODO screenshot: rotate — see screenshot-checklist.html -->
+![The rotate screen](assets/screenshots/rotate.png)
 
 ### Pose
 
@@ -93,7 +107,8 @@ On the right, the current body part is displayed, and underneath it is a button 
 
 As of version 2.0.0, there is also a scale slider! Use this to adjust the size of your armor stand.
 
-![](https://cdn.modrinth.com/data/FlC9CXUY/images/a790e199114bc2ed5258ca819f00eb5477bd1f52.png)
+<!-- TODO screenshot: pose — see screenshot-checklist.html -->
+![The pose screen](assets/screenshots/pose.png)
 
 ### Presets
 
@@ -103,7 +118,8 @@ Each pose has a source (Vanilla (Java), Bedrock, Vanilla Tweaks, and some of my 
 
 You can scroll through the pages of presets using the arrow buttons at the bottom of the screen or by using your mouse's scroll wheel while hovering over anywhere on the presets list.
 
-![](https://cdn.modrinth.com/data/FlC9CXUY/images/808c4ba7dd59a35a9dc903c96142fc6572547841.png)
+<!-- TODO screenshot: presets — see screenshot-checklist.html -->
+![The presets screen](assets/screenshots/presets.png)
 
 ### Inventory
 
@@ -111,7 +127,33 @@ On the inventory page, you'll see a very familiar UI, where you can quickly arm 
 
 In addition to the inventory management, the bottom right includes two of the toggles from the utilities page relevant to the inventory for quick access.
 
-![](https://cdn.modrinth.com/data/FlC9CXUY/images/8f5c0728c0cf4ce90d1dc65e830918684c868573.png)
+<!-- TODO screenshot: inventory — see screenshot-checklist.html -->
+![The inventory screen](assets/screenshots/inventory.png)
+
+### Mannequin
+
+On the mannequin page, you can turn your armor stand into a posable character that wears a real player's skin!
+
+Mannequin mode is opt-in per stand and turned off by default, so your stands cost nothing until you enable it — no skin is ever looked up for a stand you haven't switched on. To get started, give the stand a custom name that matches a Minecraft player (for example with a name tag), then flip on the "Mannequin" toggle. The stand will render as that player's character, complete with their skin, any armor you've equipped, items held in its hands or worn on its head, and the player's cape. A subtle idle animation brings it to life, and the stand still follows everything else you've set up — its pose, scale, and the "small" option all carry over.
+
+<!-- TODO screenshot: mannequin-example — see screenshot-checklist.html -->
+![An armor stand rendered as a player mannequin](assets/screenshots/mannequin-example.png)
+
+The master "Mannequin" toggle sits on the left, above a live face preview of the matched player and a status line. The status line either reads "Current profile:" with the player's name once the skin has loaded, or some help text reminding you to name the stand after a real player and to enable Mannequin. If the name doesn't match a real account (or the skin is still downloading), the stand simply falls back to the normal armor stand model. When a profile is matched, a "Refresh skin" button appears beneath the preview so you can immediately re-fetch that player's current skin.
+
+On the right are the rest of the toggles. "Animations" controls the idle motion, and the next several let you show or hide each part of the skin individually — Cape, Hat, Jacket, Left and Right Sleeve, Left and Right Pants — plus "Slim arms" to force the slimmer (Alex-style) arm model. There's also an "Auto-refresh skin" toggle: it's off by default (the stand keeps the skin it first loaded), but turn it on and that stand re-fetches the player's skin every 15 minutes to keep up with skin changes, with no visible interruption — it keeps showing the current skin until the new one finishes loading.
+
+Prefer to control mannequins globally? The config files have you covered: clients can disable mannequin rendering or its animations entirely, or turn off all automatic skin refreshing, and servers can disable the whole feature. See the [Configuration](#configuration) section for details.
+
+<!-- TODO screenshot: mannequin-tab — see screenshot-checklist.html -->
+![The mannequin editor tab](assets/screenshots/mannequin-tab.png)
+
+Like everything else in the mod, the mannequin settings are fully editor-backed: every change supports undo/redo and copy/paste, is shared with all players, and is saved with the world. And just like the rest of the mod, it works across Fabric, NeoForge, and Forge.
+
+> **Note:** Mannequin rendering is driven by the server over the mod's own network channel, kept deliberately separate from vanilla armor-stand data so that players without the mod can still join the server (and simply see ordinary armor stands). Two things follow from that:
+>
+> - **The mod must be installed on the server.** Connecting to a server that doesn't have the mod with only a client-side install won't make stands render as mannequins — they'll appear as ordinary armor stands. The mannequin settings live on the server and are sent to clients from there.
+> - **Replay mods won't show mannequins.** Because the mannequin data travels over the mod's channel rather than vanilla entity data, tools that play back recorded sessions (such as Replay Mod) don't reconstruct it, so stands render as plain armor stands in replays.
 
 ## Compatibility
 
@@ -119,23 +161,15 @@ In addition to the inventory management, the bottom right includes two of the to
 
 Those of you who use a dark UI mod or resource pack (i.e. the one from Vanilla Tweaks) can get full compatibility with this mod through the included built-in resource pack. If you go to the resource packs list in-game, you'll see an entry from the Armor Stands mod for Dark UI! Enable this to get the inventory screen to match the dark UI colors.
 
-![](https://cdn.modrinth.com/data/FlC9CXUY/images/e4c04b64f126691151daa2a5d7f8d24efdf9d70f.png)
-![](https://cdn.modrinth.com/data/FlC9CXUY/images/9031100324effbb3372fe60ed162baa075549cd3.png)
-
-### Blur mod
-
-If you use the [Blur mod](https://modrinth.com/mod/blur-fabric), you can add an entry to the `blurExclusions` list in your `blur.json` config file with the text `"me.roundaround.armorstands"`. This will exclude all of the armor stands screens from getting blurred.
-
-Alternatively, if you want the inventory screen to get blurred, you'll have to specify each of the other screens individually:
-
-```
-    "me.roundaround.armorstands.client.gui.screen.ArmorStandUtilitiesScreen",
-    "me.roundaround.armorstands.client.gui.screen.ArmorStandMoveScreen",
-    "me.roundaround.armorstands.client.gui.screen.ArmorStandRotateScreen",
-    "me.roundaround.armorstands.client.gui.screen.ArmorStandPoseScreen",
-    "me.roundaround.armorstands.client.gui.screen.ArmorStandPresetsScreen"
-```
+<!-- TODO screenshot: dark-ui-1 — see screenshot-checklist.html -->
+![A screen with the Dark UI resource pack enabled](assets/screenshots/dark-ui-1.png)
+<!-- TODO screenshot: dark-ui-2 — see screenshot-checklist.html -->
+![The Dark UI built-in resource pack in the resource pack list](assets/screenshots/dark-ui-2.png)
 
 ### Stylish Effects mod
 
 If you use the [Stylish Effects mod](https://modrinth.com/mod/stylish-effects), you can add an entry to the `rederers -> renderers.inventory_renderer -> menu_blacklist` list in your `stylisheffects-client.toml` config file with the text `"armorstands:*"`. This will exclude all of the armor stands screens from showing the status widgets.
+
+### Replay mods
+
+Replay mods (such as [Replay Mod](https://modrinth.com/mod/replaymod)) won't show armor stands in mannequin mode — they render as ordinary armor stands in the replay. The mannequin state travels over the mod's own network channel rather than vanilla entity data (kept separate so players without the mod can still join a server running it), and replay recordings don't reconstruct that channel. Everything else about the mod is client- or world-side and is unaffected.

@@ -57,6 +57,7 @@ public class ServerSideConfig extends ModConfigImpl implements WorldScopedFileSt
   public BooleanConfigOption opsHavePermissions;
   public StringListConfigOption allowedUsers;
   public BooleanConfigOption allowAnyItemInHeadSlot;
+  public BooleanConfigOption enableMannequins;
 
   private DedicatedServer server;
 
@@ -93,6 +94,12 @@ public class ServerSideConfig extends ModConfigImpl implements WorldScopedFileSt
         "allowAnyItemInHeadSlot"))
         .setDefaultValue(true)
         .setComment("Allow placing any item in the armor stand's head slot, not just helmets.")
+        .build()).serverOnly().commit();
+    this.enableMannequins = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of(
+        "enableMannequins"))
+        .setDefaultValue(true)
+        .setComment("When false, the mannequin feature is disabled server-wide: clients cannot",
+            "set mannequin flags and no mannequin settings are broadcast.")
         .build()).serverOnly().commit();
   }
 

@@ -17,7 +17,8 @@ public enum ScreenType {
   ROTATE(2, "rotate", BuiltinIcon.ROTATE_18),
   POSE(3, "pose", BuiltinIcon.SLIDERS_18),
   PRESETS(4, "presets", new CustomIcon("pose", 20)),
-  INVENTORY(5, "inventory", new CustomIcon("inventory", 20));
+  INVENTORY(5, "inventory", new CustomIcon("inventory", 20)),
+  MANNEQUIN(6, "mannequin", new CustomIcon("mannequin", 20));
 
   public static final IntFunction<ScreenType> ID_TO_VALUE_FUNCTION = ByIdMap.continuous(
       ScreenType::getIndex,
