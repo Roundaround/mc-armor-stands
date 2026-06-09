@@ -14,8 +14,7 @@ Place, pose, and dress armor stands with an easy-to-use UI. Simply right click a
 
 On servers, players either need OP permissions or need to be explicitly added with the command `/armorstands add playername`.
 
-<!-- TODO screenshot: overview — see screenshot-checklist.html -->
-![Editing an armor stand with the Armor Stands UI](assets/screenshots/overview.png)
+![Editing an armor stand with the Armor Stands UI](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/screenshots/overview.png)
 
 ## Helpful tips
 
@@ -72,8 +71,7 @@ On the bottom left there are several quick-setup actions, many of which actually
 
 On the right is a list of toggles. Most of them are self-explanatory, but play around with them if you're not sure what they do!
 
-<!-- TODO screenshot: utilities — see screenshot-checklist.html -->
-![The utilities screen](assets/screenshots/utilities.png)
+![The utilities screen](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/screenshots/utilities.png)
 
 ### Move
 
@@ -85,8 +83,7 @@ On the bottom left there are several quick actions. They all have tooltips to he
 
 On the right is a large wall of buttons. At the bottom, you'll see buttons for moving the armor stand by the specified amount and in the direction labelled on the left. Just above those is a helpful label showing which direction you are currently facing for reference. Above that are two buttons that let you change the parameters for how the stand will be moved.
 
-<!-- TODO screenshot: move — see screenshot-checklist.html -->
-![The move screen](assets/screenshots/move.png)
+![The move screen](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/screenshots/move.png)
 
 ### Rotate
 
@@ -94,8 +91,7 @@ On the rotate page, you'll find tools to easily rotate your armor stand the dire
 
 Similar to the move page, the left side features helpful text blocks and quick action buttons, and the right side has buttons to nudge the direction, plus a slider to quickly move it large amounts!
 
-<!-- TODO screenshot: rotate — see screenshot-checklist.html -->
-![The rotate screen](assets/screenshots/rotate.png)
+![The rotate screen](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/screenshots/rotate.png)
 
 ### Pose
 
@@ -107,8 +103,7 @@ On the right, the current body part is displayed, and underneath it is a button 
 
 As of version 2.0.0, there is also a scale slider! Use this to adjust the size of your armor stand.
 
-<!-- TODO screenshot: pose — see screenshot-checklist.html -->
-![The pose screen](assets/screenshots/pose.png)
+![The pose screen](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/screenshots/pose.png)
 
 ### Presets
 
@@ -118,8 +113,7 @@ Each pose has a source (Vanilla (Java), Bedrock, Vanilla Tweaks, and some of my 
 
 You can scroll through the pages of presets using the arrow buttons at the bottom of the screen or by using your mouse's scroll wheel while hovering over anywhere on the presets list.
 
-<!-- TODO screenshot: presets — see screenshot-checklist.html -->
-![The presets screen](assets/screenshots/presets.png)
+![The presets screen](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/screenshots/presets.png)
 
 ### Inventory
 
@@ -127,8 +121,7 @@ On the inventory page, you'll see a very familiar UI, where you can quickly arm 
 
 In addition to the inventory management, the bottom right includes two of the toggles from the utilities page relevant to the inventory for quick access.
 
-<!-- TODO screenshot: inventory — see screenshot-checklist.html -->
-![The inventory screen](assets/screenshots/inventory.png)
+![The inventory screen](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/screenshots/inventory.png)
 
 ### Mannequin
 
@@ -136,8 +129,7 @@ On the mannequin page, you can turn your armor stand into a posable character th
 
 Mannequin mode is opt-in per stand and turned off by default, so your stands cost nothing until you enable it — no skin is ever looked up for a stand you haven't switched on. To get started, give the stand a custom name that matches a Minecraft player (for example with a name tag), then flip on the "Mannequin" toggle. The stand will render as that player's character, complete with their skin, any armor you've equipped, items held in its hands or worn on its head, and the player's cape. A subtle idle animation brings it to life, and the stand still follows everything else you've set up — its pose, scale, and the "small" option all carry over.
 
-<!-- TODO screenshot: mannequin-example — see screenshot-checklist.html -->
-![An armor stand rendered as a player mannequin](assets/screenshots/mannequin-example.png)
+![An armor stand rendered as a player mannequin](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/screenshots/mannequin-example.png)
 
 The master "Mannequin" toggle sits on the left, above a live face preview of the matched player and a status line. The status line either reads "Current profile:" with the player's name once the skin has loaded, or some help text reminding you to name the stand after a real player and to enable Mannequin. If the name doesn't match a real account (or the skin is still downloading), the stand simply falls back to the normal armor stand model. When a profile is matched, a "Refresh skin" button appears beneath the preview so you can immediately re-fetch that player's current skin.
 
@@ -145,8 +137,7 @@ On the right are the rest of the toggles. "Animations" controls the idle motion,
 
 Prefer to control mannequins globally? The config files have you covered: clients can disable mannequin rendering or its animations entirely, or turn off all automatic skin refreshing, and servers can disable the whole feature. See the [Configuration](#configuration) section for details.
 
-<!-- TODO screenshot: mannequin-tab — see screenshot-checklist.html -->
-![The mannequin editor tab](assets/screenshots/mannequin-tab.png)
+![The mannequin editor tab](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/screenshots/mannequin-tab.png)
 
 Like everything else in the mod, the mannequin settings are fully editor-backed: every change supports undo/redo and copy/paste, is shared with all players, and is saved with the world. And just like the rest of the mod, it works across Fabric, NeoForge, and Forge.
 
@@ -161,10 +152,8 @@ Like everything else in the mod, the mannequin settings are fully editor-backed:
 
 Those of you who use a dark UI mod or resource pack (i.e. the one from Vanilla Tweaks) can get full compatibility with this mod through the included built-in resource pack. If you go to the resource packs list in-game, you'll see an entry from the Armor Stands mod for Dark UI! Enable this to get the inventory screen to match the dark UI colors.
 
-<!-- TODO screenshot: dark-ui-1 — see screenshot-checklist.html -->
-![A screen with the Dark UI resource pack enabled](assets/screenshots/dark-ui-1.png)
-<!-- TODO screenshot: dark-ui-2 — see screenshot-checklist.html -->
-![The Dark UI built-in resource pack in the resource pack list](assets/screenshots/dark-ui-2.png)
+![A screen with the Dark UI resource pack enabled](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/screenshots/dark-ui-1.png)
+![The Dark UI built-in resource pack in the resource pack list](https://github.com/Roundaround/mc-armor-stands/raw/main/assets/screenshots/dark-ui-2.png)
 
 ### Stylish Effects mod
 
