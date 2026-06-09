@@ -438,7 +438,7 @@ public final class MannequinRenderer {
     if (ClientSideConfig.getInstance().disableMannequins.getPendingValue()) {
       return null;
     }
-    // The master override MUST be checked before anything else: when disabled the stand renders as
+    // The main override MUST be checked before anything else: when disabled the stand renders as
     // the vanilla stick model and we never touch the name or call resolveMannequinSkin, so no skin
     // lookup/download is ever attempted for a stand the player hasn't opted in (this is the
     // performance guard — keep this check first).

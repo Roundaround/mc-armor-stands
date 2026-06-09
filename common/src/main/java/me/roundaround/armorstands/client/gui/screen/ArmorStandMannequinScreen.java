@@ -186,7 +186,7 @@ public class ArmorStandMannequinScreen extends AbstractArmorStandScreen {
   private void setMannequinFlag(MannequinToggle toggle, boolean value) {
     // Optimistically write the client entity's settings so the widget and in-world render update
     // instantly; the authoritative editor packet follows and containerTick reads it back. The C2S
-    // packet is what makes the server persist it — without it (as the master toggle used to do) the
+    // packet is what makes the server persist it — without it (as the main toggle used to do) the
     // change lives only on the client and is lost on rejoin.
     MannequinSettingsAccess access = (MannequinSettingsAccess) this.getArmorStand();
     access.armorstands$setMannequinSettings(toggle.flag.with(access.armorstands$getMannequinSettings(), value));

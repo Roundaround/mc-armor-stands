@@ -2,7 +2,7 @@ package me.roundaround.armorstands.client.render;
 
 /**
  * Immutable per-stand mannequin render settings. Holds the boolean toggles that the mannequin
- * renderer reads each frame, plus the {@code enabled} master override.
+ * renderer reads each frame, plus the {@code enabled} main override.
  *
  * <p>Stored as a synched-data int bitmask on the armor stand (see {@code ArmorStandMannequinDataMixin}),
  * edited through the server-side editor — so the toggles support undo/redo and persist with the
@@ -12,7 +12,7 @@ package me.roundaround.armorstands.client.render;
  * <p>Use {@link #DEFAULT} for an unconfigured stand, and the {@code with...} helpers to derive a
  * copy with one flag changed (e.g. {@code settings.withShowCape(false)}).
  *
- * @param enabled        master override; <b>off by default</b> — mannequin mode is opt-in per stand.
+ * @param enabled        main override; <b>off by default</b> — mannequin mode is opt-in per stand.
  *                       When {@code false} the stand renders as the normal vanilla stick model (with
  *                       its name + vanilla layers) and <b>no skin lookup is attempted at all</b>, so
  *                       stands the player has not opted in cost nothing extra.
