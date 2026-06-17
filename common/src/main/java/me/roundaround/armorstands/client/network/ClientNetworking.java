@@ -1,5 +1,16 @@
 package me.roundaround.armorstands.client.network;
 
+import me.roundaround.armorstands.client.gui.MessageRenderer;
+import me.roundaround.armorstands.client.gui.screen.AbstractArmorStandScreen;
+import me.roundaround.armorstands.client.gui.screen.ArmorStandInventoryScreen;
+import me.roundaround.armorstands.client.gui.screen.ArmorStandMannequinScreen;
+import me.roundaround.armorstands.client.gui.screen.ArmorStandMoveScreen;
+import me.roundaround.armorstands.client.gui.screen.ArmorStandPoseScreen;
+import me.roundaround.armorstands.client.gui.screen.ArmorStandPresetsScreen;
+import me.roundaround.armorstands.client.gui.screen.ArmorStandRotateScreen;
+import me.roundaround.armorstands.client.gui.screen.ArmorStandUtilitiesScreen;
+import me.roundaround.armorstands.client.render.MannequinSettings;
+import me.roundaround.armorstands.interfaces.MannequinSettingsAccess;
 import me.roundaround.armorstands.network.ArmorStandFlag;
 import me.roundaround.armorstands.network.MannequinFlag;
 import me.roundaround.armorstands.network.Networking;
@@ -7,14 +18,18 @@ import me.roundaround.armorstands.network.PosePart;
 import me.roundaround.armorstands.network.EulerAngleParameter;
 import me.roundaround.armorstands.network.ScreenType;
 import me.roundaround.armorstands.network.UtilityAction;
+import me.roundaround.armorstands.screen.ArmorStandScreenHandler;
 import me.roundaround.armorstands.util.MoveMode;
 import me.roundaround.armorstands.util.MoveUnits;
 import me.roundaround.armorstands.util.Pose;
 import me.roundaround.armorstands.util.PosePreset;
 import me.roundaround.armorstands.util.SavedPose;
 import me.roundaround.trove.network.TroveNetworking;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ArmorStand;
 
 public final class ClientNetworking {
@@ -75,5 +90,61 @@ public final class ClientNetworking {
 
   public static void sendUtilityActionPacket(UtilityAction action) {
     TroveNetworking.sendToServer(new Networking.UtilityActionC2S(action));
+  }
+
+  // S2C receivers. These touch client-only classes (Minecraft, screens), so they live here rather
+  // than in the loader-neutral Networking — which loads on the dedicated server. Networking.register()
+  // reaches them through explicit lambdas (never `ClientNetworking::on…` method refs) so this class is
+  // resolved lazily at handle-time (client only), not when registration runs on the server.
+
+  public static void onClientUpdate(Networking.ClientUpdateS2C payload) {
+    if (!(Minecraft.getInstance().screen instanceof AbstractArmorStandScreen screen)) return;
+    screen.updatePosOnClient(payload.x(), payload.y(), payload.z());
+    screen.updateYawOnClient(Mth.wrapDegrees(payload.yaw()));
+    screen.updatePitchOnClient(Mth.wrapDegrees(payload.pitch()));
+    screen.updateInvulnerableOnClient(payload.invulnerable());
+    screen.updateDisabledSlotsOnClient(payload.disabledSlots());
+  }
+
+  public static void onMannequinSettings(Networking.MannequinSettingsS2C payload) {
+    Minecraft mc = Minecraft.getInstance();
+    if (mc.level == null) return;
+    if (!(mc.level.getEntity(payload.entityId()) instanceof ArmorStand armorStand)) return;
+    // Write the local copy via the duck interface. The level here is a ClientLevel, so the setter
+    // skips the broadcast and just updates the field the renderer/screen read each tick.
+    ((MannequinSettingsAccess) armorStand).armorstands$setMannequinSettings(
+        MannequinSettings.fromBits(payload.bits()));
+  }
+
+  public static void onMessage(Networking.MessageS2C payload) {
+    if (!(Minecraft.getInstance().screen instanceof AbstractArmorStandScreen screen)) return;
+    screen.getMessageRenderer().addMessage(
+        payload.translatable() ? Component.translatable(payload.message()) : Component.literal(payload.message()),
+        payload.styled() ? payload.color() : MessageRenderer.BASE_COLOR);
+  }
+
+  public static void onOpenScreen(Networking.OpenScreenS2C payload) {
+    Minecraft mc = Minecraft.getInstance();
+    LocalPlayer player = mc.player;
+    if (player == null) return;
+    if (!(player.level().getEntity(payload.armorStandId()) instanceof ArmorStand armorStand)) return;
+
+    ArmorStandScreenHandler screenHandler = new ArmorStandScreenHandler(
+        payload.syncId(), player.getInventory(), armorStand, payload.screenType());
+    player.containerMenu = screenHandler;
+    mc.setScreen(switch (screenHandler.getScreenType()) {
+      case UTILITIES -> new ArmorStandUtilitiesScreen(screenHandler);
+      case MOVE -> new ArmorStandMoveScreen(screenHandler);
+      case ROTATE -> new ArmorStandRotateScreen(screenHandler);
+      case POSE -> new ArmorStandPoseScreen(screenHandler);
+      case PRESETS -> new ArmorStandPresetsScreen(screenHandler);
+      case INVENTORY -> new ArmorStandInventoryScreen(screenHandler);
+      case MANNEQUIN -> new ArmorStandMannequinScreen(screenHandler);
+    });
+  }
+
+  public static void onPong(Networking.PongS2C payload) {
+    if (!(Minecraft.getInstance().screen instanceof AbstractArmorStandScreen screen)) return;
+    screen.onPong();
   }
 }

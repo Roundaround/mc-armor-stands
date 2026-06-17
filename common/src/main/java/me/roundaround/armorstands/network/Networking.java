@@ -1,46 +1,27 @@
 package me.roundaround.armorstands.network;
 
-import me.roundaround.armorstands.client.gui.MessageRenderer;
-import me.roundaround.armorstands.client.gui.screen.AbstractArmorStandScreen;
-import me.roundaround.armorstands.client.gui.screen.ArmorStandInventoryScreen;
-import me.roundaround.armorstands.client.gui.screen.ArmorStandMannequinScreen;
-import me.roundaround.armorstands.client.gui.screen.ArmorStandMoveScreen;
-import me.roundaround.armorstands.client.gui.screen.ArmorStandPoseScreen;
-import me.roundaround.armorstands.client.gui.screen.ArmorStandPresetsScreen;
-import me.roundaround.armorstands.client.gui.screen.ArmorStandRotateScreen;
-import me.roundaround.armorstands.client.gui.screen.ArmorStandUtilitiesScreen;
-import me.roundaround.armorstands.client.render.MannequinSettings;
+import me.roundaround.armorstands.client.network.ClientNetworking;
 import me.roundaround.armorstands.generated.Constants;
 import me.roundaround.armorstands.mixin.ArmorStandAccessor;
-import me.roundaround.armorstands.screen.ArmorStandScreenHandler;
-import me.roundaround.armorstands.interfaces.ArmorStandScreenHandlerAccess;
-import me.roundaround.armorstands.interfaces.MannequinSettingsAccess;
-import me.roundaround.armorstands.server.config.ServerSideConfig;
 import me.roundaround.armorstands.server.network.ServerNetworking;
 import me.roundaround.armorstands.util.MoveMode;
 import me.roundaround.armorstands.util.MoveUnits;
 import me.roundaround.armorstands.util.Pose;
 import me.roundaround.armorstands.util.PosePreset;
-import me.roundaround.armorstands.util.actions.AdjustPosAction;
 import me.roundaround.trove.network.TroveNetworking;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Rotations;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
-import java.util.function.Supplier;
 
 public final class Networking {
   private Networking() {
@@ -76,135 +57,37 @@ public final class Networking {
       Constants.MOD_ID, "utility_action_c2s");
 
   public static void register() {
-    TroveNetworking.registerC2S(AdjustPoseC2S.ID, AdjustPoseC2S.CODEC, (payload, player) -> {
-      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
-      sh.getEditor().adjustPose(payload.part(), payload.parameter(), payload.amount());
-    });
+    // C2S — handled on the server thread (the loader bridge hops threads). Bodies are server-safe, so
+    // they live in ServerNetworking and register via plain method refs.
+    TroveNetworking.registerC2S(AdjustPoseC2S.ID, AdjustPoseC2S.CODEC, ServerNetworking::handleAdjustPose);
+    TroveNetworking.registerC2S(AdjustPosC2S.ID, AdjustPosC2S.CODEC, ServerNetworking::handleAdjustPos);
+    TroveNetworking.registerC2S(AdjustYawC2S.ID, AdjustYawC2S.CODEC, ServerNetworking::handleAdjustYaw);
+    TroveNetworking.registerC2S(PingC2S.ID, PingC2S.CODEC, ServerNetworking::handlePing);
+    TroveNetworking.registerC2S(RequestScreenC2S.ID, RequestScreenC2S.CODEC, ServerNetworking::handleRequestScreen);
+    TroveNetworking.registerC2S(SetFlagC2S.ID, SetFlagC2S.CODEC, ServerNetworking::handleSetFlag);
+    TroveNetworking.registerC2S(SetMannequinFlagC2S.ID, SetMannequinFlagC2S.CODEC, ServerNetworking::handleSetMannequinFlag);
+    TroveNetworking.registerC2S(SetPoseC2S.ID, SetPoseC2S.CODEC, ServerNetworking::handleSetPose);
+    TroveNetworking.registerC2S(SetPosePresetC2S.ID, SetPosePresetC2S.CODEC, ServerNetworking::handleSetPosePreset);
+    TroveNetworking.registerC2S(SetScaleC2S.ID, SetScaleC2S.CODEC, ServerNetworking::handleSetScale);
+    TroveNetworking.registerC2S(SetYawC2S.ID, SetYawC2S.CODEC, ServerNetworking::handleSetYaw);
+    TroveNetworking.registerC2S(UndoC2S.ID, UndoC2S.CODEC, ServerNetworking::handleUndo);
+    TroveNetworking.registerC2S(UtilityActionC2S.ID, UtilityActionC2S.CODEC, ServerNetworking::handleUtilityAction);
 
-    TroveNetworking.registerC2S(AdjustPosC2S.ID, AdjustPosC2S.CODEC, (payload, player) -> {
-      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
-      MoveMode mode = payload.mode();
-      sh.getEditor().applyAction(mode.isLocal()
-          ? AdjustPosAction.local(payload.direction(), payload.amount(), payload.units(), mode.isLocalToPlayer())
-          : AdjustPosAction.relative(payload.direction(), payload.amount(), payload.units()));
-    });
-
-    TroveNetworking.registerC2S(AdjustYawC2S.ID, AdjustYawC2S.CODEC, (payload, player) -> {
-      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
-      sh.getEditor().rotate(payload.amount());
-    });
-
-    TroveNetworking.registerC2S(PingC2S.ID, PingC2S.CODEC, (payload, player) -> {
-      ServerNetworking.sendPongPacket(player);
-    });
-
-    TroveNetworking.registerC2S(RequestScreenC2S.ID, RequestScreenC2S.CODEC, (payload, player) -> {
-      if (!(player.level().getEntity(payload.armorStandId()) instanceof ArmorStand armorStand)) return;
-      ((ArmorStandScreenHandlerAccess) player).armorstands$openScreen(armorStand, payload.screenType());
-    });
-
-    TroveNetworking.registerC2S(SetFlagC2S.ID, SetFlagC2S.CODEC, (payload, player) -> {
-      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
-      sh.getEditor().setFlag(payload.flag(), payload.value());
-      ServerNetworking.sendClientUpdatePacket(player, sh.getEditor().getArmorStand());
-    });
-
-    TroveNetworking.registerC2S(SetMannequinFlagC2S.ID, SetMannequinFlagC2S.CODEC, (payload, player) -> {
-      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
-      if (player.level().getServer().isDedicatedServer()
-          && !ServerSideConfig.getInstance().enableMannequins.getValue()) return;
-      sh.getEditor().setMannequinFlag(payload.flag(), payload.value());
-    });
-
-    TroveNetworking.registerC2S(SetPoseC2S.ID, SetPoseC2S.CODEC, (payload, player) -> {
-      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
-      sh.getEditor().setPose(
-          payload.head(), payload.body(), payload.rightArm(),
-          payload.leftArm(), payload.rightLeg(), payload.leftLeg());
-    });
-
-    TroveNetworking.registerC2S(SetPosePresetC2S.ID, SetPosePresetC2S.CODEC, (payload, player) -> {
-      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
-      sh.getEditor().setPose(payload.pose().toPose());
-    });
-
-    TroveNetworking.registerC2S(SetScaleC2S.ID, SetScaleC2S.CODEC, (payload, player) -> {
-      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
-      sh.getEditor().setScale(payload.scale());
-    });
-
-    TroveNetworking.registerC2S(SetYawC2S.ID, SetYawC2S.CODEC, (payload, player) -> {
-      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
-      sh.getEditor().setRotation(payload.angle());
-    });
-
-    TroveNetworking.registerC2S(UndoC2S.ID, UndoC2S.CODEC, (payload, player) -> {
-      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
-      Supplier<Boolean> action = payload.redo() ? sh.getEditor()::redo : sh.getEditor()::undo;
-      String successMessage = payload.redo() ? "armorstands.message.redo" : "armorstands.message.undo";
-      String failureMessage = payload.redo() ? "armorstands.message.redo.fail" : "armorstands.message.undo.fail";
-      if (action.get()) {
-        ServerNetworking.sendMessagePacket(player, successMessage);
-      } else {
-        ServerNetworking.sendMessagePacket(player, failureMessage);
-      }
-    });
-
-    TroveNetworking.registerC2S(UtilityActionC2S.ID, UtilityActionC2S.CODEC, (payload, player) -> {
-      if (!(player.containerMenu instanceof ArmorStandScreenHandler sh)) return;
-      payload.action().apply(sh.getEditor(), player);
-    });
-
-    TroveNetworking.registerS2C(ClientUpdateS2C.ID, ClientUpdateS2C.CODEC, (payload) -> {
-      if (!(Minecraft.getInstance().screen instanceof AbstractArmorStandScreen screen)) return;
-      screen.updatePosOnClient(payload.x(), payload.y(), payload.z());
-      screen.updateYawOnClient(Mth.wrapDegrees(payload.yaw()));
-      screen.updatePitchOnClient(Mth.wrapDegrees(payload.pitch()));
-      screen.updateInvulnerableOnClient(payload.invulnerable());
-      screen.updateDisabledSlotsOnClient(payload.disabledSlots());
-    });
-
-    TroveNetworking.registerS2C(MannequinSettingsS2C.ID, MannequinSettingsS2C.CODEC, (payload) -> {
-      Minecraft mc = Minecraft.getInstance();
-      if (mc.level == null) return;
-      if (!(mc.level.getEntity(payload.entityId()) instanceof ArmorStand armorStand)) return;
-      // Write the local copy via the duck interface. The level here is a ClientLevel, so the setter
-      // skips the broadcast and just updates the field the renderer/screen read each tick.
-      ((MannequinSettingsAccess) armorStand).armorstands$setMannequinSettings(
-          MannequinSettings.fromBits(payload.bits()));
-    });
-
-    TroveNetworking.registerS2C(MessageS2C.ID, MessageS2C.CODEC, (payload) -> {
-      if (!(Minecraft.getInstance().screen instanceof AbstractArmorStandScreen screen)) return;
-      screen.getMessageRenderer().addMessage(
-          payload.translatable() ? Component.translatable(payload.message()) : Component.literal(payload.message()),
-          payload.styled() ? payload.color() : MessageRenderer.BASE_COLOR);
-    });
-
-    TroveNetworking.registerS2C(OpenScreenS2C.ID, OpenScreenS2C.CODEC, (payload) -> {
-      Minecraft mc = Minecraft.getInstance();
-      LocalPlayer player = mc.player;
-      if (player == null) return;
-      if (!(player.level().getEntity(payload.armorStandId()) instanceof ArmorStand armorStand)) return;
-
-      ArmorStandScreenHandler screenHandler = new ArmorStandScreenHandler(
-          payload.syncId(), player.getInventory(), armorStand, payload.screenType());
-      player.containerMenu = screenHandler;
-      mc.setScreen(switch (screenHandler.getScreenType()) {
-        case UTILITIES -> new ArmorStandUtilitiesScreen(screenHandler);
-        case MOVE -> new ArmorStandMoveScreen(screenHandler);
-        case ROTATE -> new ArmorStandRotateScreen(screenHandler);
-        case POSE -> new ArmorStandPoseScreen(screenHandler);
-        case PRESETS -> new ArmorStandPresetsScreen(screenHandler);
-        case INVENTORY -> new ArmorStandInventoryScreen(screenHandler);
-        case MANNEQUIN -> new ArmorStandMannequinScreen(screenHandler);
-      });
-    });
-
-    TroveNetworking.registerS2C(PongS2C.ID, PongS2C.CODEC, (payload) -> {
-      if (!(Minecraft.getInstance().screen instanceof AbstractArmorStandScreen screen)) return;
-      screen.onPong();
-    });
+    // S2C — the handler bodies live in the client-only ClientNetworking because they touch client
+    // classes (Minecraft, screens). This register() also runs on the dedicated server (so it has the
+    // codecs to *send* these), where those classes don't exist — so Networking must reference none of
+    // them. Keep these as explicit lambdas: a `ClientNetworking::on…` method ref resolves ClientNetworking
+    // when register() runs on the server → NoClassDefFoundError. The lambda defers that to handle-time.
+    TroveNetworking.registerS2C(ClientUpdateS2C.ID, ClientUpdateS2C.CODEC,
+        (payload) -> ClientNetworking.onClientUpdate(payload));
+    TroveNetworking.registerS2C(MannequinSettingsS2C.ID, MannequinSettingsS2C.CODEC,
+        (payload) -> ClientNetworking.onMannequinSettings(payload));
+    TroveNetworking.registerS2C(MessageS2C.ID, MessageS2C.CODEC,
+        (payload) -> ClientNetworking.onMessage(payload));
+    TroveNetworking.registerS2C(OpenScreenS2C.ID, OpenScreenS2C.CODEC,
+        (payload) -> ClientNetworking.onOpenScreen(payload));
+    TroveNetworking.registerS2C(PongS2C.ID, PongS2C.CODEC,
+        (payload) -> ClientNetworking.onPong(payload));
   }
 
   public record ClientUpdateS2C(double x,
