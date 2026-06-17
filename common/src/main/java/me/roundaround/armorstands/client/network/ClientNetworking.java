@@ -73,7 +73,7 @@ public final class ClientNetworking {
   }
 
   public static void onClientUpdate(Networking.ClientUpdateS2C payload) {
-    if (!(Minecraft.getInstance().screen instanceof AbstractArmorStandScreen screen)) {
+    if (!(Minecraft.getInstance().gui.screen() instanceof AbstractArmorStandScreen screen)) {
       return;
     }
     screen.updatePosOnClient(payload.x(), payload.y(), payload.z());
@@ -97,7 +97,7 @@ public final class ClientNetworking {
   }
 
   public static void onMessage(Networking.MessageS2C payload) {
-    if (!(Minecraft.getInstance().screen instanceof AbstractArmorStandScreen screen)) {
+    if (!(Minecraft.getInstance().gui.screen() instanceof AbstractArmorStandScreen screen)) {
       return;
     }
     screen.getMessageRenderer().addMessage(
@@ -123,7 +123,7 @@ public final class ClientNetworking {
         payload.screenType()
     );
     player.containerMenu = screenHandler;
-    mc.setScreen(switch (screenHandler.getScreenType()) {
+    mc.gui.setScreen(switch (screenHandler.getScreenType()) {
       case UTILITIES -> new ArmorStandUtilitiesScreen(screenHandler);
       case MOVE -> new ArmorStandMoveScreen(screenHandler);
       case ROTATE -> new ArmorStandRotateScreen(screenHandler);
@@ -135,7 +135,7 @@ public final class ClientNetworking {
   }
 
   public static void onPong(Networking.PongS2C payload) {
-    if (!(Minecraft.getInstance().screen instanceof AbstractArmorStandScreen screen)) {
+    if (!(Minecraft.getInstance().gui.screen() instanceof AbstractArmorStandScreen screen)) {
       return;
     }
     screen.onPong();

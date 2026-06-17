@@ -8,7 +8,7 @@ import me.roundaround.trove.gametest.ClientTest;
 import me.roundaround.trove.gametest.ClientTestContext;
 import me.roundaround.trove.gametest.ClientWorld;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.ArmorStand;
 
 import static me.roundaround.armorstands.gametest.ArmorStandsServerTestSupport.check;
@@ -32,7 +32,7 @@ public class ArmorStandsClientUsageTest implements ClientTest {
       world.teleport(0.5, 65.0, 0.5);
       context.waitTicks(2);
 
-      ArmorStand stand = world.summon(EntityType.ARMOR_STAND, new BlockPos(2, 65, 0));
+      ArmorStand stand = world.summon(EntityTypes.ARMOR_STAND, new BlockPos(2, 65, 0));
       context.waitTicks(2);
 
       // Right-click the stand: the mod's interact mixin opens the editor screen.

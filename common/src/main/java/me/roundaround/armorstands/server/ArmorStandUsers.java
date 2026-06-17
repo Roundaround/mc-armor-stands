@@ -5,7 +5,6 @@ import me.roundaround.trove.config.option.StringListConfigOption;
 import me.roundaround.armorstands.server.config.ServerSideConfig;
 import me.roundaround.trove.network.TroveNetworking;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.players.NameAndId;
@@ -25,7 +24,9 @@ public class ArmorStandUsers {
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public static boolean canEditArmorStands(ServerPlayer player) {
     MinecraftServer server = player.level().getServer();
-    if (!(server instanceof DedicatedServer)) {
+    // Enforce on dedicated servers and on integrated servers opened to friends/LAN; private single
+    // player stays unrestricted so the host can always edit their own world.
+    if (!ServerSideConfig.appliesTo(server)) {
       return true;
     }
 

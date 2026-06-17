@@ -5,7 +5,6 @@ import me.roundaround.armorstands.server.command.ArmorStandsCommand;
 import me.roundaround.armorstands.server.config.ServerSideConfig;
 import me.roundaround.armorstands.server.network.ServerNetworking;
 import me.roundaround.trove.neoforge.TroveNeoForge;
-import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.neoforged.api.distmarker.Dist;
@@ -30,13 +29,10 @@ public final class ArmorStandsNeoForgeMod {
         }
     );
 
+    // Create the server-side config for every server (dedicated AND integrated) so a world opened to
+    // friends has permission enforcement available; ServerSideConfig.appliesTo() decides when it governs.
     NeoForge.EVENT_BUS.addListener(
-        ServerStartedEvent.class, event -> {
-          if (!(event.getServer() instanceof DedicatedServer dedicatedServer)) {
-            return;
-          }
-          ServerSideConfig.create(dedicatedServer).init();
-        }
+        ServerStartedEvent.class, event -> ServerSideConfig.create(event.getServer()).init()
     );
 
     NeoForge.EVENT_BUS.addListener(

@@ -8,7 +8,6 @@ import me.roundaround.armorstands.util.actions.*;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Rotations;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.phys.Vec3;
 import java.util.HashMap;
@@ -16,7 +15,10 @@ import java.util.Stack;
 import java.util.UUID;
 
 public class ArmorStandEditor {
-  private static final HashMap<UUID, Tuple<UUID, ArmorStandEditor>> editors = new HashMap<>();
+  // 26.2 dropped net.minecraft.util.Tuple; local pair keeps the per-player (stand UUID -> editor) mapping.
+  private record Entry(UUID standUuid, ArmorStandEditor editor) {}
+
+  private static final HashMap<UUID, Entry> editors = new HashMap<>();
 
   private final ServerPlayer player;
   private final ArmorStand armorStand;
@@ -27,15 +29,15 @@ public class ArmorStandEditor {
     UUID uuid = player.getUUID();
 
     if (!editors.containsKey(uuid)) {
-      editors.put(uuid, new Tuple<>(armorStand.getUUID(), new ArmorStandEditor(player, armorStand)));
+      editors.put(uuid, new Entry(armorStand.getUUID(), new ArmorStandEditor(player, armorStand)));
     }
 
-    Tuple<UUID, ArmorStandEditor> pair = editors.get(uuid);
-    if (!pair.getA().equals(armorStand.getUUID())) {
-      editors.put(uuid, new Tuple<>(armorStand.getUUID(), new ArmorStandEditor(player, armorStand)));
+    Entry pair = editors.get(uuid);
+    if (!pair.standUuid().equals(armorStand.getUUID())) {
+      editors.put(uuid, new Entry(armorStand.getUUID(), new ArmorStandEditor(player, armorStand)));
     }
 
-    return editors.get(uuid).getB();
+    return editors.get(uuid).editor();
   }
 
   public static void remove(ServerPlayer player) {

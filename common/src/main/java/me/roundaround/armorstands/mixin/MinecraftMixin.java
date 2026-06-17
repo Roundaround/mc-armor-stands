@@ -1,15 +1,14 @@
 package me.roundaround.armorstands.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
-import com.llamalad7.mixinextras.sugar.Local;
 import me.roundaround.armorstands.client.gui.screen.AbstractArmorStandScreen;
 import me.roundaround.armorstands.client.gui.screen.PassesEventsThrough;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.entity.Entity;
-import org.objectweb.asm.Opcodes;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,26 +18,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin {
+  // 26.2 moved the screen off Minecraft onto its Gui field; shadow gui and read screen() from it.
   @Shadow
-  public Screen screen;
+  @Final
+  public Gui gui;
 
   @Inject(method = "shouldEntityAppearGlowing", at = @At(value = "HEAD"), cancellable = true)
   private void hasOutline(Entity entity, CallbackInfoReturnable<Boolean> info) {
-    if (!(this.screen instanceof AbstractArmorStandScreen standScreen)) {
+    if (!(this.gui.screen() instanceof AbstractArmorStandScreen standScreen)) {
       return;
     }
 
     info.setReturnValue(standScreen.shouldHighlight(entity));
   }
 
+  // 26.2: the keybind gate now reads the screen via Gui.screen(); target the second such call in the
+  // Gui.tick()..handleKeybinds() window (the one whose null-check decides if keybinds run).
   @ModifyExpressionValue(
       method = "tick", at = @At(
-      value = "FIELD",
-      opcode = Opcodes.GETFIELD,
-      target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;"
+      value = "INVOKE",
+      target = "Lnet/minecraft/client/gui/Gui;screen()Lnet/minecraft/client/gui/screens/Screen;",
+      ordinal = 1
   ), slice = @Slice(
       from = @At(
-          value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;clearCache()V"
+          value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;tick()V"
       ), to = @At(
       value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;handleKeybinds()V"
   )
@@ -53,15 +56,5 @@ public abstract class MinecraftMixin {
       return null;
     }
     return screen;
-  }
-
-  @WrapWithCondition(
-      method = "setScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;releaseAll()V")
-  )
-  private boolean shouldUnpressAll(@Local(argsOnly = true) Screen screen) {
-    if (!(screen instanceof PassesEventsThrough passScreen)) {
-      return true;
-    }
-    return !passScreen.shouldPassEvents();
   }
 }

@@ -39,7 +39,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.PlayerModelType;
@@ -171,7 +171,7 @@ public final class MannequinRenderer {
     // reports isBaby() == isSmall(); without this the layer would pick HUMANOID_BABY, which player
     // armor assets don't define, hiding all armor. We handle small via a uniform scale below, so
     // isBaby is deliberately left false.
-    state.entityType = EntityType.ARMOR_STAND;
+    state.entityType = EntityTypes.ARMOR_STAND;
 
     // Skin-layer toggles: read by PlayerModel#setupAnim (hat/jacket/sleeves/pants) at render time,
     // and by the inline cape submit below (showCape). animationsEnabled gates the idle arm bob.

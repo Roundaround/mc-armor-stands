@@ -26,7 +26,7 @@ public class ToggleKeyMappingMixin {
   @Inject(method = "isDown()Z", at = @At("HEAD"), cancellable = true)
   private void bypassConflictContextForPassthrough(CallbackInfoReturnable<Boolean> info) {
     if (((KeyMappingAccessor) (Object) this).getIsDown()
-        && Minecraft.getInstance().screen instanceof PassesEventsThrough pst
+        && Minecraft.getInstance().gui.screen() instanceof PassesEventsThrough pst
         && pst.shouldPassEvents()) {
       info.setReturnValue(true);
     }

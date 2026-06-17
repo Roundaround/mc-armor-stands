@@ -12,6 +12,7 @@ import me.roundaround.trove.config.manage.ModConfigImpl;
 import me.roundaround.trove.config.manage.store.WorldScopedFileStore;
 import me.roundaround.trove.config.option.BooleanConfigOption;
 import me.roundaround.trove.config.option.StringListConfigOption;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.notifications.EmptyNotificationService;
@@ -41,12 +42,20 @@ public class ServerSideConfig extends ModConfigImpl implements WorldScopedFileSt
     return instance;
   }
 
-  public static ServerSideConfig create(DedicatedServer server) {
+  public static ServerSideConfig create(MinecraftServer server) {
     if (instance != null) {
       instance.close();
     }
     instance = new ServerSideConfig(server);
     return instance;
+  }
+
+  /**
+   * Whether the mod's server-side governance applies: a dedicated server, or an integrated server that
+   * has been opened to others (LAN / friends). Private single player is excluded.
+   */
+  public static boolean appliesTo(MinecraftServer server) {
+    return server.isDedicatedServer() || server.isPublished();
   }
 
   private static final String LEGACY_PROP_KEY = "enforce-armor-stand-permissions";
@@ -59,9 +68,9 @@ public class ServerSideConfig extends ModConfigImpl implements WorldScopedFileSt
   public BooleanConfigOption allowAnyItemInHeadSlot;
   public BooleanConfigOption enableMannequins;
 
-  private DedicatedServer server;
+  private MinecraftServer server;
 
-  private ServerSideConfig(DedicatedServer server) {
+  private ServerSideConfig(MinecraftServer server) {
     super(Constants.MOD_ID, "server");
     this.server = server;
   }
@@ -73,38 +82,45 @@ public class ServerSideConfig extends ModConfigImpl implements WorldScopedFileSt
 
   @Override
   protected void registerOptions() {
+    // No serverOnly() env scope: this config only ever exists server-side (see create()), and an
+    // integrated server opened to friends runs in the CLIENT process, where serverOnly() would make
+    // these options inactive and stop them loading from the per-world store.
     this.requireSneakingToEdit = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of(
             "requireSneakingToEdit")).setDefaultValue(false).setComment("Require users to sneak to use the mod.").build())
-        .serverOnly()
         .commit();
     this.enforcePermissions = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of(
         "enforcePermissions"))
         .setDefaultValue(true)
         .setComment("Only allow permitted users to use the mod.")
-        .build()).serverOnly().commit();
+        .build()).commit();
     this.opsHavePermissions = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of(
         "opsHavePermissions"))
         .setDefaultValue(true)
         .setComment("Whether server OPs are always permitted to use the mod.")
-        .build()).serverOnly().commit();
+        .build()).commit();
     this.allowedUsers = this.buildRegistration(StringListConfigOption.builder(ConfigPath.of("allowedUsers"))
         .setComment("List of users by their UUID permitted to use the mod.")
-        .build()).serverOnly().commit();
+        .build()).commit();
     this.allowAnyItemInHeadSlot = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of(
         "allowAnyItemInHeadSlot"))
         .setDefaultValue(true)
         .setComment("Allow placing any item in the armor stand's head slot, not just helmets.")
-        .build()).serverOnly().commit();
+        .build()).commit();
     this.enableMannequins = this.buildRegistration(BooleanConfigOption.yesNoBuilder(ConfigPath.of(
         "enableMannequins"))
         .setDefaultValue(true)
         .setComment("When false, the mannequin feature is disabled server-wide: clients cannot",
             "set mannequin flags and no mannequin settings are broadcast.")
-        .build()).serverOnly().commit();
+        .build()).commit();
   }
 
   @Override
   public boolean performConfigUpdate(int versionSnapshot, ConfigDoc inMemoryConfigSnapshot) {
+    // Legacy migration only applies to dedicated servers (it reads server.properties and the legacy
+    // armorstandsusers.json). Integrated servers (incl. friends-hosted) have neither.
+    if (!(this.server instanceof DedicatedServer)) {
+      return false;
+    }
     return this.performLegacyMigration(inMemoryConfigSnapshot);
   }
 
@@ -141,11 +157,11 @@ public class ServerSideConfig extends ModConfigImpl implements WorldScopedFileSt
   }
 
   private Optional<Boolean> getLegacyPermissionsEnforced() {
-    if (this.server == null) {
+    if (!(this.server instanceof DedicatedServer dedicated)) {
       return Optional.empty();
     }
 
-    DedicatedServerProperties propertiesHandler = this.server.getProperties();
+    DedicatedServerProperties propertiesHandler = dedicated.getProperties();
     Properties properties = ((SettingsAccessor) propertiesHandler).getProperties();
     String legacyValueRaw = properties.getProperty(LEGACY_PROP_KEY);
 

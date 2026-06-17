@@ -1,5 +1,5 @@
 [versions]
-trove = "1.2.0+26.1"
+trove = "1.4.1+26.2"
 
 [libraries]
 trove-bom = { module = "me.roundaround:trove-bom", version.ref = "trove" }
@@ -12,3 +12,4 @@ trove-config-gui = { module = "me.roundaround:trove-config-gui" }
 trove-fabric-gametest = { module = "me.roundaround:trove-fabric-gametest" }
 trove-neoforge-gametest = { module = "me.roundaround:trove-neoforge-gametest" }
 trove-forge-gametest = { module = "me.roundaround:trove-forge-gametest" }
+

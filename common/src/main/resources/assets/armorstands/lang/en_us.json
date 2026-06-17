@@ -1,6 +1,6 @@
 {
   "armorstands.config.title": "Armor Stands Config",
-  "armorstands.requireSneakingToEdit.label": "Open edit GUI only when sneaking\n§oApplies only to single player",
+  "armorstands.requireSneakingToEdit.label": "Open edit GUI only when sneaking\n§oApplies when you host (single-player or open to friends)",
   "armorstands.nameRenderDistance.label": "How far away armor stand names should be visible",
   "armorstands.nameRenderDistance.value": "%s Block(s)",
   "armorstands.nameRenderDistance.value.default": "Default",

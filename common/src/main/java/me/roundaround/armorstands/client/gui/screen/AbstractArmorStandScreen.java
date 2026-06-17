@@ -6,7 +6,7 @@ import me.roundaround.armorstands.client.gui.MessageRenderer;
 import me.roundaround.armorstands.client.network.ClientNetworking;
 import me.roundaround.armorstands.generated.Constants;
 import me.roundaround.armorstands.mixin.ArmorStandAccessor;
-import me.roundaround.armorstands.mixin.GuiAccessor;
+import me.roundaround.armorstands.mixin.HudAccessor;
 import me.roundaround.armorstands.mixin.MouseHandlerAccessor;
 import me.roundaround.armorstands.network.ScreenType;
 import me.roundaround.armorstands.network.UtilityAction;
@@ -222,7 +222,7 @@ public abstract class AbstractArmorStandScreen extends AbstractContainerScreen<A
 
   @Override
   protected void containerTick() {
-    ((GuiAccessor) this.minecraft.gui).invokeUpdateVignetteDarkness(this.minecraft.getCameraEntity());
+    ((HudAccessor) this.minecraft.gui.hud).invokeUpdateVignetteDarkness(this.minecraft.getCameraEntity());
 
     this.messageRenderer.tick();
 
@@ -237,7 +237,7 @@ public abstract class AbstractArmorStandScreen extends AbstractContainerScreen<A
     int adjustedMouseX = this.cursorLocked ? -1 : mouseX;
     int adjustedMouseY = this.cursorLocked ? -1 : mouseY;
 
-    ((GuiAccessor) this.minecraft.gui).invokeExtractVignette(context, this.minecraft.getCameraEntity());
+    ((HudAccessor) this.minecraft.gui.hud).invokeExtractVignette(context, this.minecraft.getCameraEntity());
 
     super.extractRenderState(context, adjustedMouseX, adjustedMouseY, delta);
 

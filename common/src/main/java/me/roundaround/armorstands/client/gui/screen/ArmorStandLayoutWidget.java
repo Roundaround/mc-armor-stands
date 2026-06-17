@@ -57,6 +57,15 @@ public class ArmorStandLayoutWidget extends SizableLayoutWidget {
   }
 
   @Override
+  public void removeChildren() {
+    this.topLeft.removeChildren();
+    this.bottomLeft.removeChildren();
+    this.topRight.removeChildren();
+    this.bottomRight.removeChildren();
+    this.nonPositioned.removeChildren();
+  }
+
+  @Override
   public void arrangeElements() {
     this.topLeft.setPosition(GuiUtil.PADDING, GuiUtil.PADDING);
     this.bottomLeft.setPosition(GuiUtil.PADDING, this.screen.height - GuiUtil.PADDING);

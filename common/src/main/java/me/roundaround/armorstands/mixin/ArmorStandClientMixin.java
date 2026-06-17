@@ -18,7 +18,7 @@ public class ArmorStandClientMixin {
   @Inject(method = "setHeadPose", at = @At("RETURN"))
   public void setHeadRotation(Rotations headRotation, CallbackInfo info) {
     Minecraft client = Minecraft.getInstance();
-    if (client.screen instanceof ArmorStandPoseScreen screen) {
+    if (client.gui.screen() instanceof ArmorStandPoseScreen screen) {
       screen.onArmorStandPoseChanged(this.self(), PosePart.HEAD);
     }
   }
@@ -26,7 +26,7 @@ public class ArmorStandClientMixin {
   @Inject(method = "setBodyPose", at = @At("RETURN"))
   public void setBodyRotation(Rotations bodyRotation, CallbackInfo info) {
     Minecraft client = Minecraft.getInstance();
-    if (client.screen instanceof ArmorStandPoseScreen screen) {
+    if (client.gui.screen() instanceof ArmorStandPoseScreen screen) {
       screen.onArmorStandPoseChanged(this.self(), PosePart.BODY);
     }
   }
@@ -34,7 +34,7 @@ public class ArmorStandClientMixin {
   @Inject(method = "setLeftArmPose", at = @At("RETURN"))
   public void setLeftArmRotation(Rotations leftArmRotation, CallbackInfo info) {
     Minecraft client = Minecraft.getInstance();
-    if (client.screen instanceof ArmorStandPoseScreen screen) {
+    if (client.gui.screen() instanceof ArmorStandPoseScreen screen) {
       screen.onArmorStandPoseChanged(this.self(), PosePart.LEFT_ARM);
     }
   }
@@ -42,7 +42,7 @@ public class ArmorStandClientMixin {
   @Inject(method = "setRightArmPose", at = @At("RETURN"))
   public void setRightArmRotation(Rotations rightArmRotation, CallbackInfo info) {
     Minecraft client = Minecraft.getInstance();
-    if (client.screen instanceof ArmorStandPoseScreen screen) {
+    if (client.gui.screen() instanceof ArmorStandPoseScreen screen) {
       screen.onArmorStandPoseChanged(this.self(), PosePart.RIGHT_ARM);
     }
   }
@@ -50,7 +50,7 @@ public class ArmorStandClientMixin {
   @Inject(method = "setLeftLegPose", at = @At("RETURN"))
   public void setLeftLegRotation(Rotations leftLegRotation, CallbackInfo info) {
     Minecraft client = Minecraft.getInstance();
-    if (client.screen instanceof ArmorStandPoseScreen screen) {
+    if (client.gui.screen() instanceof ArmorStandPoseScreen screen) {
       screen.onArmorStandPoseChanged(this.self(), PosePart.LEFT_LEG);
     }
   }
@@ -58,7 +58,7 @@ public class ArmorStandClientMixin {
   @Inject(method = "setRightLegPose", at = @At("RETURN"))
   public void setRightLegRotation(Rotations rightLegRotation, CallbackInfo info) {
     Minecraft client = Minecraft.getInstance();
-    if (client.screen instanceof ArmorStandPoseScreen screen) {
+    if (client.gui.screen() instanceof ArmorStandPoseScreen screen) {
       screen.onArmorStandPoseChanged(this.self(), PosePart.RIGHT_LEG);
     }
   }
