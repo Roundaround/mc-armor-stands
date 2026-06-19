@@ -12,6 +12,12 @@ allay {
   issues.set("https://github.com/Roundaround/mc-armor-stands/issues")
   logoFile.set("assets/armorstands/banner.png")
 
+  gametest {
+    // Acknowledge the Minecraft EULA for the throwaway worlds the client and
+    // integration game tests spin up.
+    eula.set(true)
+  }
+
   modrinth {
     projectId.set("armor-stands")
   }
