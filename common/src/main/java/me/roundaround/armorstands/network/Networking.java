@@ -81,15 +81,24 @@ public final class Networking {
     TroveNetworking.registerC2S(UndoC2S.ID, UndoC2S.CODEC, ServerNetworking::handleUndo);
     TroveNetworking.registerC2S(UtilityActionC2S.ID, UtilityActionC2S.CODEC, ServerNetworking::handleUtilityAction);
 
-    TroveNetworking.registerS2C(ClientUpdateS2C.ID, ClientUpdateS2C.CODEC, ClientNetworking::onClientUpdate);
+    // Explicit lambdas, NOT method refs: register() runs on the dedicated server
+    // too (the codecs must be registered to send), and a ClientNetworking::method
+    // ref links the metafactory directly to ClientNetworking, loading that
+    // client-only class — and the screen classes it constructs — on the server.
+    // An explicit lambda defers that load to invocation (client-only).
+    TroveNetworking.registerS2C(ClientUpdateS2C.ID, ClientUpdateS2C.CODEC,
+        payload -> ClientNetworking.onClientUpdate(payload));
     TroveNetworking.registerS2C(
         MannequinSettingsS2C.ID,
         MannequinSettingsS2C.CODEC,
-        ClientNetworking::onMannequinSettings
+        payload -> ClientNetworking.onMannequinSettings(payload)
     );
-    TroveNetworking.registerS2C(MessageS2C.ID, MessageS2C.CODEC, ClientNetworking::onMessage);
-    TroveNetworking.registerS2C(OpenScreenS2C.ID, OpenScreenS2C.CODEC, ClientNetworking::onOpenScreen);
-    TroveNetworking.registerS2C(PongS2C.ID, PongS2C.CODEC, ClientNetworking::onPong);
+    TroveNetworking.registerS2C(MessageS2C.ID, MessageS2C.CODEC,
+        payload -> ClientNetworking.onMessage(payload));
+    TroveNetworking.registerS2C(OpenScreenS2C.ID, OpenScreenS2C.CODEC,
+        payload -> ClientNetworking.onOpenScreen(payload));
+    TroveNetworking.registerS2C(PongS2C.ID, PongS2C.CODEC,
+        payload -> ClientNetworking.onPong(payload));
   }
 
   public record ClientUpdateS2C(double x,
