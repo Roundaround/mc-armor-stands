@@ -51,7 +51,7 @@ public abstract class MinecraftMixin {
     if (screen instanceof PassesEventsThrough passScreen && passScreen.shouldPassEvents()) {
       // Forge/NeoForge set movement keys to IN_GAME conflict context,
       // which makes KeyMapping.set() skip them when a screen is open.
-      // Sync key state directly from GLFW before the tick processes input.
+      // Sync key state directly from SDL before the tick processes input.
       KeyMapping.setAll();
       return null;
     }

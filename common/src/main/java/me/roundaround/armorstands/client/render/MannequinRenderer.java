@@ -194,9 +194,9 @@ public final class MannequinRenderer {
     // standard player 0.9375 down-scale, then the -1.501 vertical offset.
     float scale = source.scale;
     poseStack.scale(scale, scale, scale);
-    poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - source.bodyRot));
+    poseStack.rotateDegrees(Axis.YP, 180.0F - source.bodyRot);
     if (source.wiggle < 5.0F) {
-      poseStack.mulPose(Axis.YP.rotationDegrees(Mth.sin(source.wiggle / 1.5F * (float) Math.PI) * 3.0F));
+      poseStack.rotateDegrees(Axis.YP, Mth.sin(source.wiggle / 1.5F * (float) Math.PI) * 3.0F);
     }
     poseStack.scale(-1.0F, -1.0F, 1.0F);
     // 0.9375 is the standard avatar down-scale. A small armor stand renders at half size — vanilla
@@ -211,7 +211,7 @@ public final class MannequinRenderer {
     if (!source.isInvisible) {
       Identifier bodyTexture = skin.body().texturePath();
       submitNodeCollector.submitModel(model, state, poseStack, RenderTypes.entityTranslucent(bodyTexture),
-          source.lightCoords, OverlayTexture.NO_OVERLAY, -1, null, source.outlineColor, null);
+          source.lightCoords, OverlayTexture.NO_OVERLAY, -1, null, source.outlineColor);
 
       // The cape is a child of the body part (and we re-apply the body pose in the cape model) so it
       // follows the stand's body rotation and hangs straight at rest. Only when the skin has one and
@@ -220,7 +220,7 @@ public final class MannequinRenderer {
       if (skin.cape() != null && state.showCape) {
         Identifier capeTexture = skin.cape().texturePath();
         submitNodeCollector.submitModel(capeModel, state, poseStack, RenderTypes.entitySolid(capeTexture),
-            source.lightCoords, OverlayTexture.NO_OVERLAY, source.outlineColor, null);
+            source.lightCoords, OverlayTexture.NO_OVERLAY, source.outlineColor);
       }
     }
 
@@ -269,8 +269,8 @@ public final class MannequinRenderer {
 
     poseStack.pushPose();
     model.translateToHand(state, arm, poseStack);
-    poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
-    poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
+    poseStack.rotateDegrees(Axis.XP, -90.0F);
+    poseStack.rotateDegrees(Axis.YP, 180.0F);
     // Armor stands never use the baby offset (entityType is ARMOR_STAND), so the offsets are fixed.
     boolean left = arm == HumanoidArm.LEFT;
     poseStack.translate((left ? -1.0F : 1.0F) / 16.0F, 2.0F / 16.0F, -10.0F / 16.0F);

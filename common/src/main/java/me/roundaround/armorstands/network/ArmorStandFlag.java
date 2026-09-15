@@ -117,7 +117,7 @@ public enum ArmorStandFlag {
         armorStand.setCustomNameVisible(value);
         break;
       case INVULNERABLE:
-        armorStand.setInvulnerable(value);
+        armorStand.setPermanentlyInvulnerable(value);
         break;
       case LOCK_INVENTORY:
         accessor.setDisabledSlots(value ? ALL_SLOTS_DISABLED : 0);

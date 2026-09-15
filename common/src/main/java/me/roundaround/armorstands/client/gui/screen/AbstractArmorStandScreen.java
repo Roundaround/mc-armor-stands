@@ -35,7 +35,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -149,7 +148,7 @@ public abstract class AbstractArmorStandScreen extends AbstractContainerScreen<A
     lines.add(Component.translatable(
         "armorstands.help.close",
         this.getStyledBoundText(this.getClient().options.keyInventory),
-        InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_ESCAPE).getDisplayName()
+        InputConstants.Type.KEYBOARD.getOrCreate(InputConstants.KEY_ESCAPE).getDisplayName()
     ));
     lines.add(Component.translatable("armorstands.help.change", ScreenType.values().length));
     lines.add(Component.translatable(
@@ -159,22 +158,22 @@ public abstract class AbstractArmorStandScreen extends AbstractContainerScreen<A
     lines.add(Component.translatable(
         "armorstands.help.undo",
         control,
-        InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_Z).getDisplayName()
+        InputConstants.Type.KEYBOARD.getOrCreate(InputConstants.KEY_Z).getDisplayName()
     ));
     lines.add(Component.translatable(
         "armorstands.help.redo",
         control,
-        InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_Y).getDisplayName()
+        InputConstants.Type.KEYBOARD.getOrCreate(InputConstants.KEY_Y).getDisplayName()
     ));
     lines.add(Component.translatable(
         "armorstands.help.copy",
         control,
-        InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_C).getDisplayName()
+        InputConstants.Type.KEYBOARD.getOrCreate(InputConstants.KEY_C).getDisplayName()
     ));
     lines.add(Component.translatable(
         "armorstands.help.paste",
         control,
-        InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_V).getDisplayName()
+        InputConstants.Type.KEYBOARD.getOrCreate(InputConstants.KEY_V).getDisplayName()
     ));
     return CommonComponents.joinLines(lines);
   }
@@ -289,7 +288,7 @@ public abstract class AbstractArmorStandScreen extends AbstractContainerScreen<A
       return super.mouseDragged(click, deltaX, deltaY);
     }
 
-    if (this.getFocused() != null && this.isDragging() && click.button() == 0) {
+    if (this.getFocused() != null && this.isDragging() && click.button() == InputConstants.MOUSE_BUTTON_LEFT) {
       return this.getFocused().mouseDragged(click, deltaX, deltaY);
     }
     return false;
@@ -304,7 +303,7 @@ public abstract class AbstractArmorStandScreen extends AbstractContainerScreen<A
       return super.mouseReleased(click);
     }
 
-    if (this.isDragging() && this.getFocused() != null && click.button() == 0) {
+    if (this.isDragging() && this.getFocused() != null && click.button() == InputConstants.MOUSE_BUTTON_LEFT) {
       this.setDragging(false);
       return this.getFocused().mouseReleased(click);
     }
@@ -352,52 +351,52 @@ public abstract class AbstractArmorStandScreen extends AbstractContainerScreen<A
     }
 
     switch (input.input()) {
-      case GLFW.GLFW_KEY_ESCAPE:
+      case InputConstants.KEY_ESCAPE:
         this.onClose();
         return true;
-      case GLFW.GLFW_KEY_LEFT_ALT:
-      case GLFW.GLFW_KEY_RIGHT_ALT:
+      case InputConstants.KEY_LALT:
+      case InputConstants.KEY_RALT:
         if (!this.passEvents) {
           break;
         }
         this.lockCursor();
         return true;
-      case GLFW.GLFW_KEY_LEFT:
+      case InputConstants.KEY_LEFT:
         if (!input.hasControlDown()) {
           break;
         }
         GuiUtil.playClickSound();
         this.goToPreviousScreen();
         return true;
-      case GLFW.GLFW_KEY_RIGHT:
+      case InputConstants.KEY_RIGHT:
         if (!input.hasControlDown()) {
           break;
         }
         GuiUtil.playClickSound();
         this.goToNextScreen();
         return true;
-      case GLFW.GLFW_KEY_Z:
+      case InputConstants.KEY_Z:
         if (!this.supportsUndoRedo || !input.hasControlDown()) {
           break;
         }
         GuiUtil.playClickSound();
         ClientNetworking.sendUndoPacket(false);
         return true;
-      case GLFW.GLFW_KEY_Y:
+      case InputConstants.KEY_Y:
         if (!this.supportsUndoRedo || !input.hasControlDown()) {
           break;
         }
         GuiUtil.playClickSound();
         ClientNetworking.sendUndoPacket(true);
         return true;
-      case GLFW.GLFW_KEY_C:
+      case InputConstants.KEY_C:
         if (!this.supportsUndoRedo || !input.hasControlDown()) {
           break;
         }
         GuiUtil.playClickSound();
         ClientNetworking.sendUtilityActionPacket(UtilityAction.COPY);
         return true;
-      case GLFW.GLFW_KEY_V:
+      case InputConstants.KEY_V:
         if (!this.supportsUndoRedo || !input.hasControlDown()) {
           break;
         }
@@ -427,7 +426,7 @@ public abstract class AbstractArmorStandScreen extends AbstractContainerScreen<A
   @Override
   public boolean keyReleased(@NonNull KeyEvent input) {
     if (this.passEvents &&
-        (input.input() == GLFW.GLFW_KEY_LEFT_ALT || input.input() == GLFW.GLFW_KEY_RIGHT_ALT)) {
+        (input.input() == InputConstants.KEY_LALT || input.input() == InputConstants.KEY_RALT)) {
       this.unlockCursor();
       return true;
     }
@@ -465,7 +464,7 @@ public abstract class AbstractArmorStandScreen extends AbstractContainerScreen<A
   }
 
   public void updateInvulnerableOnClient(boolean invulnerable) {
-    this.armorStand.setInvulnerable(invulnerable);
+    this.armorStand.setPermanentlyInvulnerable(invulnerable);
   }
 
   public void updateDisabledSlotsOnClient(int disabledSlots) {
@@ -478,7 +477,7 @@ public abstract class AbstractArmorStandScreen extends AbstractContainerScreen<A
     int y = this.minecraft.getWindow().getScreenHeight() / 2;
     ((MouseHandlerAccessor) this.minecraft.mouseHandler).setXpos(x);
     ((MouseHandlerAccessor) this.minecraft.mouseHandler).setYpos(y);
-    InputConstants.grabOrReleaseMouse(this.minecraft.getWindow(), InputConstants.CURSOR_DISABLED, x, y);
+    InputConstants.grabMouse(this.minecraft.getWindow(), x, y);
   }
 
   protected void unlockCursor() {
@@ -487,7 +486,7 @@ public abstract class AbstractArmorStandScreen extends AbstractContainerScreen<A
     int y = this.minecraft.getWindow().getScreenHeight() / 2;
     ((MouseHandlerAccessor) this.minecraft.mouseHandler).setXpos(x);
     ((MouseHandlerAccessor) this.minecraft.mouseHandler).setYpos(y);
-    InputConstants.grabOrReleaseMouse(this.minecraft.getWindow(), InputConstants.CURSOR_NORMAL, x, y);
+    InputConstants.releaseMouse(this.minecraft.getWindow(), x, y);
   }
 
   protected void goToPreviousScreen() {

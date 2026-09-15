@@ -17,7 +17,7 @@ public class ArmorStandsClientMod implements ClientModInitializer {
   public void onInitializeClient() {
     ArmorStandsKeyMappings.highlightArmorStand = KeyBindings.register(new KeyMapping(
         "armorstands.key.highlight_armor_stand",
-        InputConstants.Type.KEYSYM,
+        InputConstants.Type.KEYBOARD,
         InputConstants.UNKNOWN.getValue(),
         KeyMapping.Category.MISC
     ));

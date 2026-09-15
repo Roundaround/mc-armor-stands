@@ -5,30 +5,31 @@ import me.roundaround.armorstands.screen.ArmorStandScreenHandler;
 import me.roundaround.allay.api.MixinEnv;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.PositionPath;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Optional;
 
 @Mixin(Entity.class)
 @MixinEnv(MixinEnv.Env.CLIENT)
 public abstract class EntityClientMixin implements EntityPosition {
+  // 26.3: every moveOrInterpolateTo overload funnels into this 4-arg one.
   @Inject(
-      method = "moveOrInterpolateTo(Ljava/util/Optional;Ljava/util/Optional;Ljava/util/Optional;)V",
+      method = "moveOrInterpolateTo(Lnet/minecraft/world/entity/PositionPath;FFZ)V",
       at = @At(value = "HEAD"),
       cancellable = true
   )
   public void updateTrackedPositionAndAngles(
-      Optional<Vec3> pos,
-      Optional<Float> yaw,
-      Optional<Float> pitch,
+      PositionPath pos,
+      float yaw,
+      float pitch,
+      boolean hasRotation,
       CallbackInfo info
   ) {
     if (!(this.self() instanceof ArmorStand self)) {
